@@ -2,6 +2,7 @@ const { Request, Response } = require("express");
 const { createSession, getUser, invalidateSession } = require("../db");
 const { signJWT, verifyJWT } = require("../utils/jwt.utils");
 const bcrypt = require("bcrypt");
+const { sendMail } = require("../utils/email.utils");
 
 const { prisma } = require("../../prisma/client/prisma-client");
 
@@ -53,8 +54,9 @@ async function createUserHandler(req, res) {
       },
     });
   }
+  const session = createSession(user.email, user.name, user.role, false);
 
-  const session = createSession(user.email, user.name, user.role);
+  await sendMail(user.email, user.name, user.role, session.sessionId);
 
   // create access token
   const accessToken = signJWT(
@@ -62,6 +64,7 @@ async function createUserHandler(req, res) {
       email: user.email,
       name: user.name,
       role: user.role,
+      verified: false,
       sessionId: session.sessionId,
     },
     "5s"
@@ -99,7 +102,12 @@ async function createSessionHandler(req, res) {
 
   if (!pass) return res.status(401).send("Invalid email or password");
 
-  const session = createSession(user.email, user.name, user.role);
+  const session = createSession(
+    user.email,
+    user.name,
+    user.role,
+    user.verified
+  );
 
   // create access token
   const accessToken = signJWT(
@@ -107,6 +115,7 @@ async function createSessionHandler(req, res) {
       email: user.email,
       name: user.name,
       role: user.role,
+      verified: user.verified,
       sessionId: session.sessionId,
     },
     "5s"
@@ -152,9 +161,68 @@ function deleteSessionHandler(req, res) {
   return res.send(session);
 }
 
+async function verificationHandler(req, res) {
+  const email = req.params.email;
+  const token = req.params.token;
+
+  const { payload, expired } = verifyJWT(token);
+
+  if (expired) return res.status(401).send("Link expired");
+
+  if (!payload) return res.status(404).send("Invalid link");
+
+  if (payload.email != email) res.status(401).send("Invalid link");
+
+  const user = await prisma.user.update({
+    data: {
+      verified: true,
+    },
+    where: {
+      email,
+    },
+  });
+
+  const session = createSession(user.email, user.name, user.role, true);
+
+  // create access token
+  const accessToken = signJWT(
+    {
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      verified: true,
+      sessionId: session.sessionId,
+    },
+    "5s"
+  );
+
+  const refreshToken = signJWT({ sessionId: session.sessionId }, "1y");
+
+  // set access token in cookie
+  res.cookie("accessToken", accessToken, {
+    maxAge: 300000, // 5 minutes
+    httpOnly: true,
+  });
+
+  res.cookie("refreshToken", refreshToken, {
+    maxAge: 3.154e10, // 1 year
+    httpOnly: true,
+  });
+
+  res.send("Verified successfully");
+}
+
+async function resendMail(req, res) {
+  const user = req.user;
+  await sendMail(user.email, user.name, user.role, user.sessionId);
+  res.send("verify");
+}
+
 module.exports = {
   deleteSessionHandler,
   getSessionHandler,
   createSessionHandler,
   createUserHandler,
+  verificationHandler,
+  resendMail,
 };

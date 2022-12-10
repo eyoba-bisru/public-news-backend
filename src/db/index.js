@@ -26,10 +26,10 @@ function invalidateSession(sessionId) {
   return sessions[sessionId];
 }
 
-function createSession(email, name, role) {
+function createSession(email, name, role, verified) {
   const sessionId = String(Object.keys(sessions).length + 1);
 
-  const session = { sessionId, email, valid: true, name, role };
+  const session = { sessionId, email, verified, name, role, valid: true };
 
   sessions[sessionId] = session;
 

@@ -1,9 +1,9 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const routes = require("./routes");
 
 const { deserializeUser } = require("./middlewares/deserializeUser");
+const authRouter = require("./routes/auth");
 
 const app = express();
 
@@ -25,7 +25,8 @@ function main() {
     console.log(`Server listening at http://localhost:4000`);
   });
 
-  routes(app);
+  // routes(app);
+  app.use("/api", authRouter);
 }
 
 main();

@@ -30,6 +30,7 @@ model User {
   shortName String?
   logo      String?
   phone     Int?
+  verified  Boolean    @default(false)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   Post      Post[]
