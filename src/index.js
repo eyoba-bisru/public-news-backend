@@ -4,6 +4,7 @@ const cors = require("cors");
 
 const { deserializeUser } = require("./middlewares/deserializeUser");
 const authRouter = require("./routes/auth");
+const postRouter = require("./routes/post");
 
 const app = express();
 
@@ -26,6 +27,8 @@ function main() {
   });
 
   // routes(app);
+
+  app.use("/api", postRouter);
   app.use("/api", authRouter);
 }
 
