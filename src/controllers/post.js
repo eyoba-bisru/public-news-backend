@@ -143,6 +143,20 @@ async function postsCategoryHandler(req, res) {
   res.send(posts);
 }
 
+async function postHandler(req, res) {
+  const { id } = req.body;
+  const post = await prisma.post.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      user: true,
+    },
+  });
+
+  res.send(post);
+}
+
 module.exports = {
   postsHomeHandler,
   addContentHandler,
@@ -151,4 +165,5 @@ module.exports = {
   addLocationHandler,
   loadMoreHandler,
   postsCategoryHandler,
+  postHandler,
 };
