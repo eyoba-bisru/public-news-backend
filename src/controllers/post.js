@@ -63,39 +63,6 @@ async function addPostHandler(req, res) {
 
   res.send(post);
 }
-async function addContentHandler(req, res) {
-  const { name } = req.body;
-
-  const content = await prisma.content.create({
-    data: {
-      name,
-    },
-  });
-
-  res.send(content);
-}
-async function addLanguageHandler(req, res) {
-  const { name } = req.body;
-
-  const language = await prisma.language.create({
-    data: {
-      name,
-    },
-  });
-
-  res.send(language);
-}
-async function addLocationHandler(req, res) {
-  const { name } = req.body;
-
-  const location = await prisma.location.create({
-    data: {
-      name,
-    },
-  });
-
-  res.send(location);
-}
 
 async function loadMoreHandler(req, res) {
   const { contentId, id } = req.body;
@@ -159,10 +126,7 @@ async function postHandler(req, res) {
 
 module.exports = {
   postsHomeHandler,
-  addContentHandler,
-  addLanguageHandler,
   addPostHandler,
-  addLocationHandler,
   loadMoreHandler,
   postsCategoryHandler,
   postHandler,

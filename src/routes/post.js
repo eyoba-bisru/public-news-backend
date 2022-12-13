@@ -12,13 +12,10 @@ const {
 const { requireUser } = require("../middlewares/requireUser");
 const router = express.Router();
 
+router.post("/", postHandler);
 router.get("/postsHome", postsHomeHandler);
 router.post("/addPost", requireUser, addPostHandler);
-router.post("/addLocation", addLocationHandler);
-router.post("/addContent", addContentHandler);
-router.post("/addLanguage", addLanguageHandler);
 router.post("/loadMore", loadMoreHandler);
 router.post("/postsCategory", postsCategoryHandler);
-router.post("/post", postHandler);
 
 module.exports = router;

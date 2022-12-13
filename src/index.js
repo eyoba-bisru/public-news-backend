@@ -5,6 +5,7 @@ const cors = require("cors");
 const { deserializeUser } = require("./middlewares/deserializeUser");
 const authRouter = require("./routes/auth");
 const postRouter = require("./routes/post");
+const configurationRouter = require("./routes/configuration");
 
 const app = express();
 
@@ -28,8 +29,9 @@ function main() {
 
   // routes(app);
 
-  app.use("/api", postRouter);
-  app.use("/api", authRouter);
+  app.use("/api/configuration", configurationRouter);
+  app.use("/api/post", postRouter);
+  app.use("/api/auth", authRouter);
 }
 
 main();
