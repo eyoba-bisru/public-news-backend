@@ -1,11 +1,11 @@
-const { prisma } = require("../../prisma/client/prisma-client");
+const { prisma } = require('../../prisma/client/prisma-client')
 
 async function postsHomeHandler(req, res) {
   const posts = await prisma.post.findMany({
     take: 16,
     orderBy: [
       {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     ],
     include: {
@@ -20,23 +20,23 @@ async function postsHomeHandler(req, res) {
         },
       },
     },
-  });
+  })
 
-  res.send(posts);
+  res.send(posts)
 }
 
 async function addPostHandler(req, res) {
-  const { email, role } = req.user;
+  const { email, role } = req.user
 
-  if (role != "EDITOR") {
-    return res.status(401).send("Permission denied");
+  if (role != 'EDITOR') {
+    return res.status(401).send('Permission denied')
   }
 
   const { id: userId } = await prisma.user.findUnique({
     where: {
       email,
     },
-  });
+  })
 
   const {
     description,
@@ -46,7 +46,7 @@ async function addPostHandler(req, res) {
     languageId,
     locationId,
     videoUrl,
-  } = req.body;
+  } = req.body
 
   const post = await prisma.post.create({
     data: {
@@ -59,13 +59,13 @@ async function addPostHandler(req, res) {
       userId,
       videoUrl,
     },
-  });
+  })
 
-  res.send(post);
+  res.send(post)
 }
 
 async function loadMoreHandler(req, res) {
-  const { contentId, id } = req.body;
+  const { contentId, id } = req.body
 
   const posts = await prisma.post.findMany({
     where: {
@@ -78,22 +78,22 @@ async function loadMoreHandler(req, res) {
     skip: 1,
     orderBy: [
       {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     ],
-  });
+  })
 
-  res.send(posts);
+  res.send(posts)
 }
 
 async function postsCategoryHandler(req, res) {
-  const { name } = req.body;
+  const { name } = req.body
 
   const { id: contentId } = await prisma.content.findUnique({
     where: {
       name,
     },
-  });
+  })
 
   const posts = await prisma.post.findMany({
     take: 2,
@@ -102,32 +102,61 @@ async function postsCategoryHandler(req, res) {
     },
     orderBy: [
       {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     ],
-  });
+  })
 
-  res.send(posts);
+  res.send(posts)
 }
 
 async function postHandler(req, res) {
-  const { id } = req.body;
+  const { id } = req.body
   const post = await prisma.post.findUnique({
     where: {
       id,
     },
     include: {
       user: true,
+      content: {
+        select: {
+          id: true,
+        },
+      },
     },
-  });
+  })
 
-  res.send(post);
+  res.send(post)
 }
+async function recommendationHandler(req, res) {
+  const { id, contentId } = req.body
+  const recommended = await prisma.post.findMany({
+    take: 5,
+    select: {
+      id: true,
+      title: true,
+      imageUrl: true,
+    },
+    where: {
+      contentId,
+      NOT: {
+        id,
+      },
+    },
+    orderBy: [
+      {
+        createdAt: 'desc',
+      },
+    ],
+  })
 
+  res.send(recommended)
+}
 module.exports = {
   postsHomeHandler,
   addPostHandler,
   loadMoreHandler,
   postsCategoryHandler,
   postHandler,
-};
+  recommendationHandler,
+}
