@@ -71,6 +71,9 @@ async function sitemapHandler(req, res) {
       },
     });
 
+    locations.forEach((location) => (location["type"] = "location"));
+    contents.forEach((content) => (content["type"] = "content"));
+
     res.send([...locations, ...contents]);
   } catch (error) {
     res.sendStatus(500);
@@ -85,6 +88,8 @@ async function languageHandler(req, res) {
         name: true,
       },
     });
+
+    languages.forEach((language) => (language["type"] = "language"));
 
     res.send(languages);
   } catch (error) {
@@ -113,6 +118,10 @@ async function allHandler(req, res) {
         name: true,
       },
     });
+
+    languages.forEach((language) => (language["type"] = "language"));
+    locations.forEach((location) => (location["type"] = "location"));
+    contents.forEach((content) => (content["type"] = "content"));
 
     res.send([...contents, ...languages, ...locations]);
   } catch (error) {

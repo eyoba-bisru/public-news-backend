@@ -2,12 +2,13 @@ const express = require("express");
 const {
   postsHomeHandler,
   addPostHandler,
-  addContentHandler,
-  addLanguageHandler,
-  addLocationHandler,
   loadMoreHandler,
   postsCategoryHandler,
   postHandler,
+  recommendedHandler,
+  contentPostsHandler,
+  languagePostsHandler,
+  locationPostsHandler,
 } = require("../controllers/post");
 const { requireUser } = require("../middlewares/requireUser");
 const router = express.Router();
@@ -17,5 +18,9 @@ router.get("/postsHome", postsHomeHandler);
 router.post("/addPost", requireUser, addPostHandler);
 router.post("/loadMore", loadMoreHandler);
 router.post("/postsCategory", postsCategoryHandler);
+router.post("/recommended", recommendedHandler);
+router.post("/contentPosts", contentPostsHandler);
+router.post("/languagePosts", languagePostsHandler);
+router.post("/locationPosts", locationPostsHandler);
 
 module.exports = router;

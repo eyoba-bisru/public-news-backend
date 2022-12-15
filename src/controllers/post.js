@@ -83,7 +83,7 @@ async function loadMoreHandler(req, res) {
       where: {
         contentId,
       },
-      take: 2,
+      take: 4,
       cursor: {
         id,
       },
@@ -117,7 +117,7 @@ async function postsCategoryHandler(req, res) {
     });
 
     const posts = await prisma.post.findMany({
-      take: 2,
+      take: 6,
       where: {
         contentId,
       },
@@ -126,6 +126,123 @@ async function postsCategoryHandler(req, res) {
           createdAt: "desc",
         },
       ],
+    });
+    res.send(posts);
+  } catch (error) {
+    res.status(404).send("Category doesn't found");
+  }
+}
+async function contentPostsHandler(req, res) {
+  const { name } = req.body;
+
+  if (!name) return res.sendStatus(400);
+
+  try {
+    const posts = await prisma.post.findMany({
+      take: 6,
+      where: {
+        content: {
+          name: {
+            equals: name,
+            mode: "insensitive",
+          },
+        },
+      },
+      orderBy: [
+        {
+          createdAt: "desc",
+        },
+      ],
+      include: {
+        content: {
+          select: {
+            name: true,
+          },
+        },
+        user: {
+          select: {
+            shortName: true,
+          },
+        },
+      },
+    });
+    res.send(posts);
+  } catch (error) {
+    res.status(404).send("Category doesn't found");
+  }
+}
+async function languagePostsHandler(req, res) {
+  const { name } = req.body;
+
+  if (!name) return res.sendStatus(400);
+
+  try {
+    const posts = await prisma.post.findMany({
+      take: 6,
+      where: {
+        language: {
+          name: {
+            equals: name,
+            mode: "insensitive",
+          },
+        },
+      },
+      orderBy: [
+        {
+          createdAt: "desc",
+        },
+      ],
+      include: {
+        language: {
+          select: {
+            name: true,
+          },
+        },
+        user: {
+          select: {
+            shortName: true,
+          },
+        },
+      },
+    });
+    res.send(posts);
+  } catch (error) {
+    res.status(404).send("Category doesn't found");
+  }
+}
+async function locationPostsHandler(req, res) {
+  const { name } = req.body;
+
+  if (!name) return res.sendStatus(400);
+
+  try {
+    const posts = await prisma.post.findMany({
+      take: 6,
+      where: {
+        location: {
+          name: {
+            equals: name,
+            mode: "insensitive",
+          },
+        },
+      },
+      orderBy: [
+        {
+          createdAt: "desc",
+        },
+      ],
+      include: {
+        location: {
+          select: {
+            name: true,
+          },
+        },
+        user: {
+          select: {
+            shortName: true,
+          },
+        },
+      },
     });
     res.send(posts);
   } catch (error) {
@@ -145,10 +262,48 @@ async function postHandler(req, res) {
       },
       include: {
         user: true,
+        content: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
 
     res.send(post);
+  } catch (error) {
+    res.sendStatus(500);
+  }
+}
+
+async function recommendedHandler(req, res) {
+  const { id, contentId } = req.body;
+
+  if (!id) return res.sendStatus(400);
+  if (!contentId) return res.sendStatus(400);
+
+  try {
+    const recommended = await prisma.post.findMany({
+      take: 5,
+      select: {
+        id: true,
+        title: true,
+        imageUrl: true,
+      },
+      where: {
+        contentId,
+        NOT: {
+          id,
+        },
+      },
+      orderBy: [
+        {
+          createdAt: "desc",
+        },
+      ],
+    });
+
+    res.send(recommended);
   } catch (error) {
     res.sendStatus(500);
   }
@@ -160,4 +315,8 @@ module.exports = {
   loadMoreHandler,
   postsCategoryHandler,
   postHandler,
+  recommendedHandler,
+  contentPostsHandler,
+  languagePostsHandler,
+  locationPostsHandler,
 };
