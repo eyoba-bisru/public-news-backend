@@ -1,4 +1,3 @@
-const { Request, Response } = require("express");
 const { createSession, getUser, invalidateSession } = require("../db");
 const { signJWT, verifyJWT } = require("../utils/jwt.utils");
 const bcrypt = require("bcrypt");
