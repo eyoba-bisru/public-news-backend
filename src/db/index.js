@@ -1,13 +1,5 @@
 const { prisma } = require("../../prisma/client/prisma-client");
 
-const users = [
-  {
-    email: "test@test.com",
-    password: "password",
-    name: "Jane Doe",
-  },
-];
-
 const sessions = {};
 
 function getSession(sessionId) {

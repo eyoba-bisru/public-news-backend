@@ -40,7 +40,7 @@ async function sendMail(email, role, name, sessionId) {
     "10m"
   );
 
-  const message = `${process.env.BASE_URL}/api/verify/${email}/${token}`;
+  const message = `${process.env.BASE_URL}/api/auth/verify/${email}/${token}`;
   await sendEmail(email, "Verify Email", message);
 }
 

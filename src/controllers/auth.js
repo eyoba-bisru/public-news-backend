@@ -6,18 +6,9 @@ const { sendMail } = require("../utils/email.utils");
 const { prisma } = require("../../prisma/client/prisma-client");
 
 async function createUserHandler(req, res) {
-  const { name, email, password, role, logo, shortName, phoneNumber } =
-    req.body;
+  const { name, email, password } = req.body;
 
-  if (role == "ADMIN") {
-    return res.status(401).send("Admin cannot be registered");
-  }
-
-  if (role == "EDITOR" && (!logo || !shortName || !phoneNumber)) {
-    return res.status(401).send("logo, short name and phone number required");
-  }
-
-  if (!name || !email || !password || !role) {
+  if (!name || !email || !password) {
     return res.status(401).send("name, email and password required");
   }
 
@@ -27,67 +18,112 @@ async function createUserHandler(req, res) {
     return res.status(401).send("User already exist");
   }
 
-  const hashedPass = await bcrypt.hash(password, 10);
+  try {
+    const hashedPass = await bcrypt.hash(password, 10);
 
-  let user = {};
-
-  if (role == "EDITOR") {
-    user = await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         email,
         password: hashedPass,
         name,
-        role,
+      },
+    });
+
+    const session = createSession(user.email, user.name, user.role, false);
+
+    await sendMail(user.email, user.name, user.role, session.sessionId);
+
+    // create access token
+    const accessToken = signJWT(
+      {
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        verified: false,
+        sessionId: session.sessionId,
+      },
+      "5s"
+    );
+
+    const refreshToken = signJWT({ sessionId: session.sessionId }, "1y");
+
+    // set access token in cookie
+    res.cookie("accessToken", accessToken, {
+      maxAge: 300000, // 5 minutes
+      httpOnly: true,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      maxAge: 3.154e10, // 1 year
+      httpOnly: true,
+    });
+
+    // send user back
+    return res.send(session);
+  } catch (error) {
+    res.sendStatus(500);
+  }
+}
+
+async function createEditorHandler(req, res) {
+  const { role } = req.user;
+
+  if (role != "ADMIN") return res.sendStatus(401);
+
+  const { name, email, password, logo, shortName, phoneNumber } = req.body;
+
+  if (!logo || !shortName || !phoneNumber)
+    return res.status(400).send("logo, short name and phone number required");
+
+  if (!name || !email || !password)
+    return res.status(400).send("name, email and password required");
+
+  const usr = await getUser(email);
+
+  if (usr) {
+    return res.status(409).send("User already exist");
+  }
+
+  try {
+    const hashedPass = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPass,
+        name,
+        role: "EDITOR",
         logo,
         shortName,
+        verified: true,
         phone: phoneNumber,
       },
     });
-  } else {
-    user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPass,
-        name,
-        role,
-      },
-    });
+
+    // const session = createSession(user.email, user.name, "EDITOR", false);
+
+    // await sendMail(user.email, user.name, "EDITOR", session.sessionId);
+
+    // const accessToken = signJWT(
+    //   {
+    //     email: user.email,
+    //     name: user.name,
+    //     role: "EDITOR",
+    //     verified: false,
+    //     sessionId: session.sessionId,
+    //   },
+    //   "5s"
+    // );
+
+    // const refreshToken = signJWT({ sessionId: session.sessionId }, "1y");
+
+    res.send("Registered Successfull");
+  } catch (error) {
+    res.sendStatus(500);
   }
-  const session = createSession(user.email, user.name, user.role, false);
-
-  await sendMail(user.email, user.name, user.role, session.sessionId);
-
-  // create access token
-  const accessToken = signJWT(
-    {
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      verified: false,
-      sessionId: session.sessionId,
-    },
-    "5s"
-  );
-
-  const refreshToken = signJWT({ sessionId: session.sessionId }, "1y");
-
-  // set access token in cookie
-  res.cookie("accessToken", accessToken, {
-    maxAge: 300000, // 5 minutes
-    httpOnly: true,
-  });
-
-  res.cookie("refreshToken", refreshToken, {
-    maxAge: 3.154e10, // 1 year
-    httpOnly: true,
-  });
-
-  // send user back
-  return res.send(session);
 }
 
-// login handler
-async function createSessionHandler(req, res) {
+async function loginHandler(req, res) {
   const { email, password } = req.body;
 
   if (!email || !password)
@@ -137,9 +173,6 @@ async function createSessionHandler(req, res) {
   return res.send(session);
 }
 
-// get the session session
-
-// log out handler
 function getSessionHandler(req, res) {
   return res.send(req.user);
 }
@@ -220,8 +253,9 @@ async function resendMail(req, res) {
 module.exports = {
   deleteSessionHandler,
   getSessionHandler,
-  createSessionHandler,
+  loginHandler,
   createUserHandler,
   verificationHandler,
   resendMail,
+  createEditorHandler,
 };

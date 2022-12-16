@@ -2,34 +2,31 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  createSessionHandler,
+  loginHandler,
   getSessionHandler,
   deleteSessionHandler,
   createUserHandler,
   verificationHandler,
   resendMail,
+  createEditorHandler,
 } = require("../controllers/auth");
 const { requireUser } = require("../middlewares/requireUser");
 const { verifyUser } = require("../middlewares/verifyUser");
 
 router.post("/signup", createUserHandler);
 
-// login
-router.post("/login", createSessionHandler);
+router.post("/login", loginHandler);
 
-// verify
 router.get("/verify/:email/:token", verificationHandler);
 
 router.use(requireUser);
 
 router.post("/mail", resendMail);
 
+router.get("/session", getSessionHandler);
+router.delete("/logout", deleteSessionHandler);
 router.use(verifyUser);
 
-// get the current session
-router.get("/session", getSessionHandler);
-
-// logout
-router.delete("/logout", deleteSessionHandler);
+router.post("/registerEditor", createEditorHandler);
 
 module.exports = router;
