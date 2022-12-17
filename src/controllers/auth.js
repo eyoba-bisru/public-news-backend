@@ -29,7 +29,13 @@ async function createUserHandler(req, res) {
       },
     });
 
-    const session = createSession(user.email, user.name, user.role, false);
+    const session = createSession(
+      user.email,
+      user.name,
+      user.role,
+      false,
+      user.logo
+    );
 
     await sendMail(user.email, user.name, user.role, session.sessionId);
 
@@ -40,6 +46,7 @@ async function createUserHandler(req, res) {
         name: user.name,
         role: user.role,
         verified: false,
+        logo: user.logo,
         sessionId: session.sessionId,
       },
       "5s"
@@ -100,23 +107,6 @@ async function createEditorHandler(req, res) {
       },
     });
 
-    // const session = createSession(user.email, user.name, "EDITOR", false);
-
-    // await sendMail(user.email, user.name, "EDITOR", session.sessionId);
-
-    // const accessToken = signJWT(
-    //   {
-    //     email: user.email,
-    //     name: user.name,
-    //     role: "EDITOR",
-    //     verified: false,
-    //     sessionId: session.sessionId,
-    //   },
-    //   "5s"
-    // );
-
-    // const refreshToken = signJWT({ sessionId: session.sessionId }, "1y");
-
     res.send("Registered Successfull");
   } catch (error) {
     res.sendStatus(500);
@@ -141,7 +131,8 @@ async function loginHandler(req, res) {
     user.email,
     user.name,
     user.role,
-    user.verified
+    user.verified,
+    user.logo
   );
 
   // create access token
@@ -151,6 +142,7 @@ async function loginHandler(req, res) {
       name: user.name,
       role: user.role,
       verified: user.verified,
+      logo: user.logo,
       sessionId: session.sessionId,
     },
     "5s"
