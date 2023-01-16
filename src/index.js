@@ -6,9 +6,11 @@ const { deserializeUser } = require("./middlewares/deserializeUser");
 const authRouter = require("./routes/auth");
 const postRouter = require("./routes/post");
 const configurationRouter = require("./routes/configuration");
+const companiesRouter = require("./routes/companies");
 
 const app = express();
 
+app.use(express.static("public"));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -32,6 +34,7 @@ function main() {
   app.use("/api/configuration", configurationRouter);
   app.use("/api/post", postRouter);
   app.use("/api/auth", authRouter);
+  app.use("/api/company", companiesRouter);
 }
 
 main();

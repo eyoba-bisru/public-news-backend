@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const { sendMail } = require("../utils/email.utils");
 
 const { prisma } = require("../../prisma/client/prisma-client");
+const { upload } = require("../utils/imageUpload.utils");
 
 async function createUserHandler(req, res) {
   const { name, email, password } = req.body;
@@ -73,25 +74,28 @@ async function createUserHandler(req, res) {
 }
 
 async function createEditorHandler(req, res) {
-  const { role } = req.user;
-
-  if (role != "ADMIN") return res.sendStatus(401);
-
-  const { name, email, password, logo, shortName, phoneNumber } = req.body;
-
-  if (!logo || !shortName || !phoneNumber)
-    return res.status(400).send("logo, short name and phone number required");
-
-  if (!name || !email || !password)
-    return res.status(400).send("name, email and password required");
-
-  const usr = await getUser(email);
-
-  if (usr) {
-    return res.status(409).send("User already exist");
-  }
-
   try {
+    const { role } = req.user;
+    const files = req.files;
+
+    if (role != "ADMIN") return res.sendStatus(401);
+
+    const { name, email, password, phoneNumber, shortName } = req.body;
+
+    if (!shortName || !phoneNumber)
+      return res.status(400).send("short name and phone number required");
+
+    if (!name || !email || !password)
+      return res.status(400).send("name, email and password required");
+
+    const usr = await getUser(email);
+
+    if (usr) {
+      return res.status(409).send("User already exist");
+    }
+
+    const logo = upload(files);
+
     const hashedPass = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
@@ -100,8 +104,8 @@ async function createEditorHandler(req, res) {
         password: hashedPass,
         name,
         role: "EDITOR",
-        logo,
         shortName,
+        logo,
         verified: true,
         phone: phoneNumber,
       },
@@ -109,6 +113,7 @@ async function createEditorHandler(req, res) {
 
     res.send("Registered Successfull");
   } catch (error) {
+    console.log(error);
     res.sendStatus(500);
   }
 }
