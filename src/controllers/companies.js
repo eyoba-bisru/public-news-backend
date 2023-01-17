@@ -86,8 +86,28 @@ async function fetchOneCompanyHandler(req, res) {
   }
 }
 
+async function suspendHandler(req, res) {
+  try {
+    const { id, suspended } = req.body;
+
+    const user = await prisma.user.update({
+      data: {
+        suspended: !suspended,
+      },
+      where: {
+        id,
+      },
+    });
+
+    res.send(user);
+  } catch (error) {
+    res.sendStatus(500);
+  }
+}
+
 module.exports = {
   fetchCompanyHandler,
   updateEditorHandler,
   fetchOneCompanyHandler,
+  suspendHandler,
 };

@@ -5,6 +5,7 @@ const {
   fetchCompanyHandler,
   updateEditorHandler,
   fetchOneCompanyHandler,
+  suspendHandler,
 } = require("../controllers/companies");
 const fileExist = require("../middlewares/fileExist");
 const fileExtLimiter = require("../middlewares/fileExtLimiter");
@@ -24,4 +25,5 @@ router.patch(
   updateEditorHandler
 );
 
+router.post("/suspend", suspendHandler);
 module.exports = router;
