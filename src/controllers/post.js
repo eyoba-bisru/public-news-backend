@@ -309,6 +309,12 @@ async function recommendedHandler(req, res) {
   }
 }
 
+async function numOfPostsHandler(req, res) {
+  const num = await prisma.post.count({});
+
+  res.status(200).json(num);
+}
+
 module.exports = {
   postsHomeHandler,
   addPostHandler,
@@ -319,4 +325,5 @@ module.exports = {
   contentPostsHandler,
   languagePostsHandler,
   locationPostsHandler,
+  numOfPostsHandler,
 };

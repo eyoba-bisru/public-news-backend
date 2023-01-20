@@ -15,6 +15,8 @@ const {
   verificationHandler,
   resendMail,
   createEditorHandler,
+  numOfSubsHandler,
+  changePasswordHandler
 } = require("../controllers/auth");
 const { requireUser } = require("../middlewares/requireUser");
 const { verifyUser } = require("../middlewares/verifyUser");
@@ -61,6 +63,9 @@ router.post("/mail", resendMail);
 router.get("/session", getSessionHandler);
 router.delete("/logout", deleteSessionHandler);
 // router.use(verifyUser);
+router.get("/numOfSubs", numOfSubsHandler);
+
+router.post('/changepassword', changePasswordHandler)
 
 router.post(
   "/registerEditor",

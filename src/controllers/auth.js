@@ -247,6 +247,51 @@ async function resendMail(req, res) {
   res.send("verify");
 }
 
+async function numOfSubsHandler(req, res) {
+  const num = await prisma.user.count({
+    where: {
+      role: "USER",
+    },
+  });
+
+  res.status(200).json(num);
+}
+
+async function changePasswordHandler(req, res) {
+  try {
+    const { email, password, oldPassword } = req.body;
+
+    const user = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+      select: {
+        password: true,
+      },
+    });
+
+    const pass = await bcrypt.compare(oldPassword, user.password);
+    
+    if(!pass) return res.status(401).send("Invalid password combination")
+
+    const hashedPass = await bcrypt.hash(password, 10);
+
+    const usr = await prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        password: hashedPass,
+      },
+    });
+
+    res.send(usr);
+  } catch (error) {
+    res.sendStatus(500);
+    console.log(error);
+  }
+}
+
 module.exports = {
   deleteSessionHandler,
   getSessionHandler,
@@ -255,4 +300,6 @@ module.exports = {
   verificationHandler,
   resendMail,
   createEditorHandler,
+  numOfSubsHandler,
+  changePasswordHandler,
 };

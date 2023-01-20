@@ -105,9 +105,20 @@ async function suspendHandler(req, res) {
   }
 }
 
+async function numOfAuthorHandler(req, res) {
+  const num = await prisma.user.count({
+    where: {
+      role: "EDITOR",
+    },
+  });
+
+  res.status(200).json(num);
+}
+
 module.exports = {
   fetchCompanyHandler,
   updateEditorHandler,
   fetchOneCompanyHandler,
   suspendHandler,
+  numOfAuthorHandler,
 };
