@@ -267,6 +267,17 @@ async function postHandler(req, res) {
             id: true,
           },
         },
+        Bookmark: {
+          select: {
+            userId: true,
+            user: {
+              select: {
+                id: true,
+              },
+            },
+            postId: true,
+          },
+        },
       },
     });
 
@@ -315,6 +326,76 @@ async function numOfPostsHandler(req, res) {
   res.status(200).json(num);
 }
 
+async function bookmarkHandler(req, res) {
+  try {
+    const { userId, postId } = req.body;
+
+    const bookmark = await prisma.bookmark.create({
+      data: {
+        userId,
+        postId,
+      },
+    });
+
+    res.send(bookmark);
+  } catch (error) {
+    if (error.code === "P2002") return res.status(500).send("Already added");
+    res.sendStatus(500);
+  }
+}
+
+async function removeBookmarkHandler(req, res) {
+  try {
+    const { userId, postId } = req.body;
+
+    const bookmark = await prisma.bookmark.delete({
+      where: {
+        userId_postId: {
+          userId,
+          postId,
+        },
+      },
+    });
+
+    res.send(bookmark);
+  } catch (error) {
+    if (error.code === "P2002") return res.status(500).send("Doesnot found");
+    console.log(error);
+    res.sendStatus(500);
+  }
+}
+
+async function bookmarksHandler(req, res) {
+  try {
+    const { userId } = req.body;
+    const posts = await prisma.post.findMany({
+      where: {
+        Bookmark: {
+          some: {
+            userId,
+          },
+        },
+      },
+      include: {
+        user: {
+          select: {
+            shortName: true,
+          },
+        },
+        language: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    res.send(posts);
+  } catch (error) {
+    res.sendStatus(500);
+  }
+}
+
 module.exports = {
   postsHomeHandler,
   addPostHandler,
@@ -326,4 +407,7 @@ module.exports = {
   languagePostsHandler,
   locationPostsHandler,
   numOfPostsHandler,
+  bookmarkHandler,
+  removeBookmarkHandler,
+  bookmarksHandler,
 };

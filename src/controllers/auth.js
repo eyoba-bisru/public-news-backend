@@ -133,6 +133,7 @@ async function loginHandler(req, res) {
   if (!pass) return res.status(401).send("Invalid email or password");
 
   const session = createSession(
+    user.id,
     user.email,
     user.name,
     user.role,
@@ -143,6 +144,7 @@ async function loginHandler(req, res) {
   // create access token
   const accessToken = signJWT(
     {
+      id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
@@ -271,8 +273,8 @@ async function changePasswordHandler(req, res) {
     });
 
     const pass = await bcrypt.compare(oldPassword, user.password);
-    
-    if(!pass) return res.status(401).send("Invalid password combination")
+
+    if (!pass) return res.status(401).send("Invalid password combination");
 
     const hashedPass = await bcrypt.hash(password, 10);
 

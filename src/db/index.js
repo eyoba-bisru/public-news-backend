@@ -18,10 +18,19 @@ function invalidateSession(sessionId) {
   return sessions[sessionId];
 }
 
-function createSession(email, name, role, verified, logo) {
+function createSession(id, email, name, role, verified, logo) {
   const sessionId = String(Object.keys(sessions).length + 1);
 
-  const session = { sessionId, email, verified, name, role, logo, valid: true };
+  const session = {
+    sessionId,
+    id,
+    email,
+    verified,
+    name,
+    role,
+    logo,
+    valid: true,
+  };
 
   sessions[sessionId] = session;
 
