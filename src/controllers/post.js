@@ -1,4 +1,5 @@
-const { prisma } = require("../../prisma/client/prisma-client");
+const { prisma } = require('../../prisma/client/prisma-client')
+const { upload } = require('../utils/imageUpload.utils')
 
 async function postsHomeHandler(req, res) {
   try {
@@ -6,7 +7,7 @@ async function postsHomeHandler(req, res) {
       take: 16,
       orderBy: [
         {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
       ],
       include: {
@@ -21,37 +22,33 @@ async function postsHomeHandler(req, res) {
           },
         },
       },
-    });
+    })
 
-    res.send(posts);
+    res.send(posts)
   } catch (error) {
-    res.sendStatus(500);
+    res.sendStatus(500)
   }
 }
 
 async function addPostHandler(req, res) {
-  const { email, role } = req.user;
+  const { email, role } = req.user
 
-  if (!email) return res.status(401).send("Permission denied");
+  if (!email) return res.status(401).send('Permission denied')
 
-  if (role != "EDITOR") return res.status(401).send("Permission denied");
+  if (role != 'EDITOR') return res.status(401).send('Permission denied')
 
   try {
     const { id: userId } = await prisma.user.findUnique({
       where: {
         email,
       },
-    });
+    })
 
-    const {
-      description,
-      imageUrl,
-      title,
-      contentId,
-      languageId,
-      locationId,
-      videoUrl,
-    } = req.body;
+    const { description, title, contentId, languageId, locationId } = req.body
+
+    const files = req.files
+
+    const imageUrl = upload(files)
 
     const post = await prisma.post.create({
       data: {
@@ -62,21 +59,21 @@ async function addPostHandler(req, res) {
         languageId,
         locationId,
         userId,
-        videoUrl,
       },
-    });
+    })
 
-    res.send(post);
+    res.send(post)
   } catch (error) {
-    res.sendStatus(500);
+    console.log(error)
+    res.sendStatus(500)
   }
 }
 
 async function loadMoreHandler(req, res) {
-  const { contentId, id } = req.body;
+  const { contentId, id } = req.body
 
-  if (!contentId) return res.sendStatus(400);
-  if (!id) return res.sendStatus(400);
+  if (!contentId) return res.sendStatus(400)
+  if (!id) return res.sendStatus(400)
 
   try {
     const posts = await prisma.post.findMany({
@@ -90,31 +87,31 @@ async function loadMoreHandler(req, res) {
       skip: 1,
       orderBy: [
         {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
       ],
-    });
+    })
 
-    res.send(posts);
+    res.send(posts)
   } catch (error) {
-    res.sendStatus(500);
+    res.sendStatus(500)
   }
 }
 
 async function postsCategoryHandler(req, res) {
-  const { name } = req.body;
+  const { name } = req.body
 
-  if (!name) return res.sendStatus(400);
+  if (!name) return res.sendStatus(400)
 
   try {
     const { id: contentId } = await prisma.content.findFirst({
       where: {
         name: {
           equals: name,
-          mode: "insensitive",
+          mode: 'insensitive',
         },
       },
-    });
+    })
 
     const posts = await prisma.post.findMany({
       take: 6,
@@ -123,19 +120,20 @@ async function postsCategoryHandler(req, res) {
       },
       orderBy: [
         {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
       ],
-    });
-    res.send(posts);
+    })
+    res.send(posts)
   } catch (error) {
-    res.status(404).send("Category doesn't found");
+    res.status(404).send("Category doesn't found")
   }
 }
-async function contentPostsHandler(req, res) {
-  const { name } = req.body;
 
-  if (!name) return res.sendStatus(400);
+async function contentPostsHandler(req, res) {
+  const { name } = req.body
+
+  if (!name) return res.sendStatus(400)
 
   try {
     const posts = await prisma.post.findMany({
@@ -144,13 +142,13 @@ async function contentPostsHandler(req, res) {
         content: {
           name: {
             equals: name,
-            mode: "insensitive",
+            mode: 'insensitive',
           },
         },
       },
       orderBy: [
         {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
       ],
       include: {
@@ -165,16 +163,16 @@ async function contentPostsHandler(req, res) {
           },
         },
       },
-    });
-    res.send(posts);
+    })
+    res.send(posts)
   } catch (error) {
-    res.status(404).send("Category doesn't found");
+    res.status(404).send("Category doesn't found")
   }
 }
 async function languagePostsHandler(req, res) {
-  const { name } = req.body;
+  const { name } = req.body
 
-  if (!name) return res.sendStatus(400);
+  if (!name) return res.sendStatus(400)
 
   try {
     const posts = await prisma.post.findMany({
@@ -183,13 +181,13 @@ async function languagePostsHandler(req, res) {
         language: {
           name: {
             equals: name,
-            mode: "insensitive",
+            mode: 'insensitive',
           },
         },
       },
       orderBy: [
         {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
       ],
       include: {
@@ -204,16 +202,16 @@ async function languagePostsHandler(req, res) {
           },
         },
       },
-    });
-    res.send(posts);
+    })
+    res.send(posts)
   } catch (error) {
-    res.status(404).send("Category doesn't found");
+    res.status(404).send("Category doesn't found")
   }
 }
 async function locationPostsHandler(req, res) {
-  const { name } = req.body;
+  const { name } = req.body
 
-  if (!name) return res.sendStatus(400);
+  if (!name) return res.sendStatus(400)
 
   try {
     const posts = await prisma.post.findMany({
@@ -222,13 +220,13 @@ async function locationPostsHandler(req, res) {
         location: {
           name: {
             equals: name,
-            mode: "insensitive",
+            mode: 'insensitive',
           },
         },
       },
       orderBy: [
         {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
       ],
       include: {
@@ -243,17 +241,17 @@ async function locationPostsHandler(req, res) {
           },
         },
       },
-    });
-    res.send(posts);
+    })
+    res.send(posts)
   } catch (error) {
-    res.status(404).send("Category doesn't found");
+    res.status(404).send("Category doesn't found")
   }
 }
 
 async function postHandler(req, res) {
-  const { id } = req.body;
+  const { id } = req.body
 
-  if (!id) return res.sendStatus(400);
+  if (!id) return res.sendStatus(400)
 
   try {
     const post = await prisma.post.findUnique({
@@ -279,19 +277,19 @@ async function postHandler(req, res) {
           },
         },
       },
-    });
+    })
 
-    res.send(post);
+    res.send(post)
   } catch (error) {
-    res.sendStatus(500);
+    res.sendStatus(500)
   }
 }
 
 async function recommendedHandler(req, res) {
-  const { id, contentId } = req.body;
+  const { id, contentId } = req.body
 
-  if (!id) return res.sendStatus(400);
-  if (!contentId) return res.sendStatus(400);
+  if (!id) return res.sendStatus(400)
+  if (!contentId) return res.sendStatus(400)
 
   try {
     const recommended = await prisma.post.findMany({
@@ -309,44 +307,44 @@ async function recommendedHandler(req, res) {
       },
       orderBy: [
         {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
       ],
-    });
+    })
 
-    res.send(recommended);
+    res.send(recommended)
   } catch (error) {
-    res.sendStatus(500);
+    res.sendStatus(500)
   }
 }
 
 async function numOfPostsHandler(req, res) {
-  const num = await prisma.post.count({});
+  const num = await prisma.post.count({})
 
-  res.status(200).json(num);
+  res.status(200).json(num)
 }
 
 async function bookmarkHandler(req, res) {
   try {
-    const { userId, postId } = req.body;
+    const { userId, postId } = req.body
 
     const bookmark = await prisma.bookmark.create({
       data: {
         userId,
         postId,
       },
-    });
+    })
 
-    res.send(bookmark);
+    res.send(bookmark)
   } catch (error) {
-    if (error.code === "P2002") return res.status(500).send("Already added");
-    res.sendStatus(500);
+    if (error.code === 'P2002') return res.status(500).send('Already added')
+    res.sendStatus(500)
   }
 }
 
 async function removeBookmarkHandler(req, res) {
   try {
-    const { userId, postId } = req.body;
+    const { userId, postId } = req.body
 
     const bookmark = await prisma.bookmark.delete({
       where: {
@@ -355,19 +353,19 @@ async function removeBookmarkHandler(req, res) {
           postId,
         },
       },
-    });
+    })
 
-    res.send(bookmark);
+    res.send(bookmark)
   } catch (error) {
-    if (error.code === "P2002") return res.status(500).send("Doesnot found");
-    console.log(error);
-    res.sendStatus(500);
+    if (error.code === 'P2002') return res.status(500).send('Doesnot found')
+    console.log(error)
+    res.sendStatus(500)
   }
 }
 
 async function bookmarksHandler(req, res) {
   try {
-    const { userId } = req.body;
+    const { userId } = req.body
     const posts = await prisma.post.findMany({
       where: {
         Bookmark: {
@@ -388,11 +386,51 @@ async function bookmarksHandler(req, res) {
           },
         },
       },
-    });
+    })
 
-    res.send(posts);
+    res.send(posts)
   } catch (error) {
-    res.sendStatus(500);
+    res.sendStatus(500)
+  }
+}
+
+async function postedNewsHandler(req, res) {
+  try {
+    const { email } = req.user
+    const { id } = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+      select: { id: true },
+    })
+    const posts = await prisma.post.findMany({
+      where: {
+        userId: id,
+      },
+      select: {
+        id: true,
+        title: true,
+        content: {
+          select: {
+            name: true,
+          },
+        },
+        language: {
+          select: {
+            name: true,
+          },
+        },
+        location: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+    res.send(posts)
+  } catch (error) {
+    console.log(error)
+    res.sendStatus(500)
   }
 }
 
@@ -410,4 +448,5 @@ module.exports = {
   bookmarkHandler,
   removeBookmarkHandler,
   bookmarksHandler,
-};
+  postedNewsHandler,
+}
