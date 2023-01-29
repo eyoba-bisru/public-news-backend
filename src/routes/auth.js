@@ -12,20 +12,16 @@ const {
   getSessionHandler,
   deleteSessionHandler,
   createUserHandler,
-  verificationHandler,
   resendMail,
   createEditorHandler,
   numOfSubsHandler,
-  changePasswordHandler
+  changePasswordHandler,
 } = require("../controllers/auth");
 const { requireUser } = require("../middlewares/requireUser");
-const { verifyUser } = require("../middlewares/verifyUser");
 
 router.post("/signup", createUserHandler);
 
 router.post("/login", loginHandler);
-
-router.get("/verify/:email/:token", verificationHandler);
 
 // router.post(
 //   "/upload",
@@ -62,18 +58,10 @@ router.post("/mail", resendMail);
 
 router.get("/session", getSessionHandler);
 router.delete("/logout", deleteSessionHandler);
-// router.use(verifyUser);
 router.get("/numOfSubs", numOfSubsHandler);
 
-router.post('/changepassword', changePasswordHandler)
+router.post("/changepassword", changePasswordHandler);
 
-router.post(
-  "/registerEditor",
-  fileUpload({ createParentPath: true }),
-  filesPayloadExists,
-  fileExtLimiter([".png", ".jpg", ".jpeg"]),
-  fileSizeLimiter,
-  createEditorHandler
-);
+router.post("/registerEditor", createEditorHandler);
 
 module.exports = router;
