@@ -46,7 +46,6 @@ async function createUserHandler(req, res) {
         email: user.email,
         name: user.name,
         role: user.role,
-        verified: false,
         logo: user.logo,
         sessionId: session.sessionId,
       },
@@ -76,14 +75,11 @@ async function createUserHandler(req, res) {
 async function createEditorHandler(req, res) {
   try {
     const { role } = req.user;
-    const files = req.files;
 
     if (role != "ADMIN") return res.sendStatus(401);
 
-    const { name, email, password, phoneNumber, shortName } = req.body;
-
-    if (!shortName || !phoneNumber)
-      return res.status(400).send("short name and phone number required");
+    const { name, email, password } = req.body;
+    console.log(name, email, password);
 
     if (!name || !email || !password)
       return res.status(400).send("name, email and password required");
@@ -94,8 +90,6 @@ async function createEditorHandler(req, res) {
       return res.status(409).send("User already exist");
     }
 
-    const logo = upload(files);
-
     const hashedPass = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
@@ -104,10 +98,6 @@ async function createEditorHandler(req, res) {
         password: hashedPass,
         name,
         role: "EDITOR",
-        shortName,
-        logo,
-        verified: true,
-        phone: phoneNumber,
       },
     });
 
@@ -137,7 +127,6 @@ async function loginHandler(req, res) {
     user.email,
     user.name,
     user.role,
-    user.verified,
     user.logo
   );
 
@@ -148,7 +137,6 @@ async function loginHandler(req, res) {
       email: user.email,
       name: user.name,
       role: user.role,
-      verified: user.verified,
       logo: user.logo,
       sessionId: session.sessionId,
     },
@@ -190,57 +178,6 @@ function deleteSessionHandler(req, res) {
   const session = invalidateSession(req.user.sessionId);
 
   return res.send(session);
-}
-
-async function verificationHandler(req, res) {
-  const email = req.params.email;
-  const token = req.params.token;
-
-  const { payload, expired } = verifyJWT(token);
-
-  if (expired) return res.status(401).send("Link expired");
-
-  if (!payload) return res.status(404).send("Invalid link");
-
-  if (payload.email != email) res.status(401).send("Invalid link");
-
-  const user = await prisma.user.update({
-    data: {
-      verified: true,
-    },
-    where: {
-      email,
-    },
-  });
-
-  const session = createSession(user.email, user.name, user.role, true);
-
-  // create access token
-  const accessToken = signJWT(
-    {
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      verified: true,
-      sessionId: session.sessionId,
-    },
-    "5s"
-  );
-
-  const refreshToken = signJWT({ sessionId: session.sessionId }, "1y");
-
-  // set access token in cookie
-  res.cookie("accessToken", accessToken, {
-    maxAge: 300000, // 5 minutes
-    httpOnly: true,
-  });
-
-  res.cookie("refreshToken", refreshToken, {
-    maxAge: 3.154e10, // 1 year
-    httpOnly: true,
-  });
-
-  res.send("Verified successfully");
 }
 
 async function resendMail(req, res) {
@@ -299,7 +236,6 @@ module.exports = {
   getSessionHandler,
   loginHandler,
   createUserHandler,
-  verificationHandler,
   resendMail,
   createEditorHandler,
   numOfSubsHandler,
