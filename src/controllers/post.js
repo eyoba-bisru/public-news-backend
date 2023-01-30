@@ -1,4 +1,6 @@
 const { prisma } = require("../../prisma/client/prisma-client");
+const { checkLiked } = require("../utils/checkLiked.utils");
+const { checkUnliked } = require("../utils/checkUnliked.utils");
 const { upload } = require("../utils/imageUpload.utils");
 
 async function postsHomeHandler(req, res) {
@@ -438,6 +440,157 @@ async function postedNewsHandler(req, res) {
   }
 }
 
+async function likeHandler(req, res) {
+  try {
+    const { id } = req.user;
+    let { postId } = req.body;
+    postId = parseInt(postId);
+
+    let isLiked = await checkLiked(id, postId);
+    let isUnliked = await checkUnliked(id, postId);
+
+    if (!isUnliked.isUnliked) {
+      if (isLiked.isLiked) {
+        isLiked = await prisma.like.deleteMany({
+          where: {
+            userId: id,
+            postId,
+          },
+        });
+        return res.send({ isLiked: false });
+      } else {
+        isLiked = await prisma.like.create({
+          data: {
+            userId: id,
+            postId,
+          },
+        });
+        console.log("added");
+        return res.send({ isLiked: true });
+      }
+    } else {
+      isUnliked = await prisma.unlike.deleteMany({
+        where: {
+          userId: id,
+          postId,
+        },
+      });
+
+      isLiked = await prisma.like.create({
+        data: {
+          userId: id,
+          postId,
+        },
+      });
+      console.log("added");
+      return res.send({ isLiked: true });
+    }
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+}
+
+async function isLikedHandler(req, res) {
+  try {
+    const { id } = req.user;
+    let { postId } = req.body;
+    postId = parseInt(postId);
+
+    const isLiked = await checkLiked(id, postId);
+
+    res.send(isLiked);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+}
+
+async function numOfLikedHandler(req, res) {
+  try {
+    let { postId } = req.body;
+    postId = parseInt(postId);
+
+    const num = await prisma.like.count({
+      where: {
+        postId,
+      },
+    });
+
+    res.json({ num });
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+}
+
+async function unlikeHandler(req, res) {
+  try {
+    const { id } = req.user;
+    let { postId } = req.body;
+    postId = parseInt(postId);
+
+    let isLiked = await checkLiked(id, postId);
+    let isUnliked = await checkUnliked(id, postId);
+
+    if (!isLiked.isLiked) {
+      if (isUnliked.isUnliked) {
+        isUnliked = await prisma.unlike.deleteMany({
+          where: {
+            userId: id,
+            postId,
+          },
+        });
+        return res.json({ isUnliked: false });
+      } else {
+        isUnliked = await prisma.unlike.create({
+          data: {
+            userId: id,
+            postId,
+          },
+        });
+        console.log("added");
+        return res.send({ isUnliked: true });
+      }
+    } else {
+      await prisma.like.deleteMany({
+        where: {
+          userId: id,
+          postId,
+        },
+      });
+      console.log("removed");
+
+      isUnliked = await prisma.unlike.create({
+        data: {
+          userId: id,
+          postId,
+        },
+      });
+
+      return res.send({ isUnliked: true });
+    }
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+}
+
+async function isUnlikedHandler(req, res) {
+  try {
+    const { id } = req.user;
+    let { postId } = req.body;
+    postId = parseInt(postId);
+
+    const isUnliked = await checkUnliked(id, postId);
+
+    res.send(isUnliked);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+}
+
 module.exports = {
   postsHomeHandler,
   addPostHandler,
@@ -453,4 +606,9 @@ module.exports = {
   removeBookmarkHandler,
   bookmarksHandler,
   postedNewsHandler,
+  likeHandler,
+  isLikedHandler,
+  numOfLikedHandler,
+  unlikeHandler,
+  isUnlikedHandler,
 };
