@@ -337,7 +337,9 @@ async function numOfPostsHandler(req, res) {
 
 async function bookmarkHandler(req, res) {
   try {
-    const { userId, postId } = req.body;
+    let { userId, postId } = req.body;
+
+    postId = parseInt(postId);
 
     const bookmark = await prisma.bookmark.create({
       data: {
@@ -349,13 +351,16 @@ async function bookmarkHandler(req, res) {
     res.send(bookmark);
   } catch (error) {
     if (error.code === "P2002") return res.status(500).send("Already added");
+    console.log(error);
     res.sendStatus(500);
   }
 }
 
 async function removeBookmarkHandler(req, res) {
   try {
-    const { userId, postId } = req.body;
+    let { userId, postId } = req.body;
+
+    postId = parseInt(postId);
 
     const bookmark = await prisma.bookmark.delete({
       where: {
@@ -591,6 +596,54 @@ async function isUnlikedHandler(req, res) {
   }
 }
 
+async function commentsHandler(req, res) {
+  try {
+    const { id } = req.user;
+    let { postId, name } = req.body;
+    postId = parseInt(postId);
+
+    console.log(name);
+
+    const comment = await prisma.comment.create({
+      data: {
+        name,
+        postId,
+        userId: id,
+      },
+    });
+
+    res.send(comment);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+}
+
+async function getAllCommentsHandler(req, res) {
+  try {
+    let { postId } = req.body;
+
+    postId = parseInt(postId);
+
+    const comments = await prisma.comment.findMany({
+      where: {
+        postId,
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    res.send(comments);
+  } catch (error) {
+    res.sendStatus(500);
+  }
+}
+
 module.exports = {
   postsHomeHandler,
   addPostHandler,
@@ -611,4 +664,6 @@ module.exports = {
   numOfLikedHandler,
   unlikeHandler,
   isUnlikedHandler,
+  commentsHandler,
+  getAllCommentsHandler,
 };
