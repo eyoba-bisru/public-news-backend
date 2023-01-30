@@ -24,6 +24,7 @@ model User {
   Like      Like[]
   Comment   Comment[]
   Report    Report[]
+  Unlike    Unlike[]
 }
 
 enum Role {
@@ -45,7 +46,7 @@ model Bookmark {
 model Post {
   id          Int        @id @default(autoincrement())
   title       String
-  description String
+  description String     @db.LongText
   imageUrl    String
   sources     String?
   location    Location   @relation(fields: [locationId], references: [id])
@@ -62,6 +63,7 @@ model Post {
   Like        Like[]
   Comment     Comment[]
   Report      Report[]
+  Unlike      Unlike[]
 
   @@index([createdAt])
 }
@@ -96,6 +98,14 @@ model Like {
   userId Int
   post   Post @relation(fields: [postId], references: [id])
   postId Int
+}
+
+model Unlike {
+  id     Int   @id @default(autoincrement())
+  user   User  @relation(fields: [userId], references: [id])
+  Post   Post? @relation(fields: [postId], references: [id])
+  postId Int?
+  userId Int
 }
 
 model Comment {
