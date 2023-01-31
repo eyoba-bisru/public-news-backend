@@ -822,6 +822,75 @@ async function searchHandler(req, res) {
   }
 }
 
+async function analyticsHandler(req, res) {
+  let sport = await prisma.post.count({
+    where: {
+      content: {
+        name: "Sport",
+      },
+    },
+  });
+  let bussiness = await prisma.post.count({
+    where: {
+      content: {
+        name: "Bussiness",
+      },
+    },
+  });
+  let culture = await prisma.post.count({
+    where: {
+      content: {
+        name: "Culture",
+      },
+    },
+  });
+  let health = await prisma.post.count({
+    where: {
+      content: {
+        name: "Health",
+      },
+    },
+  });
+  let education = await prisma.post.count({
+    where: {
+      content: {
+        name: "Education",
+      },
+    },
+  });
+  let sciTech = await prisma.post.count({
+    where: {
+      content: {
+        name: "Sci-Tech",
+      },
+    },
+  });
+  let politics = await prisma.post.count({
+    where: {
+      content: {
+        name: "Politics",
+      },
+    },
+  });
+
+  res.send([sport, health, sciTech, education, bussiness, culture, politics]);
+}
+
+const fs = require("fs");
+const path = require("path");
+
+async function addVistorHandler(req, res) {
+  let count = parseInt(fs.readFileSync("public/visitor.txt", "utf-8"));
+  count = count + 1 + "";
+  fs.writeFileSync("public/visitor.txt", count);
+  res.send("successfull");
+}
+
+async function visitorsHandler(req, res) {
+  const count = parseInt(fs.readFileSync("public/visitor.txt", "utf-8"));
+  res.json(count);
+}
+
 module.exports = {
   postsHomeHandler,
   addPostHandler,
@@ -846,4 +915,7 @@ module.exports = {
   getAllCommentsHandler,
   customizeHandler,
   searchHandler,
+  analyticsHandler,
+  addVistorHandler,
+  visitorsHandler,
 };

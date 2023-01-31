@@ -24,6 +24,9 @@ const {
   getAllCommentsHandler,
   customizeHandler,
   searchHandler,
+  analyticsHandler,
+  addVistorHandler,
+  visitorsHandler,
 } = require("../controllers/post");
 const fileExtLimiter = require("../middlewares/fileExtLimiter");
 const fileSizeLimiter = require("../middlewares/fileSizeLimiter");
@@ -62,5 +65,8 @@ router.post("/comments", commentsHandler);
 router.post("/getAllComments", getAllCommentsHandler);
 router.post("/customize", customizeHandler);
 router.post("/search", searchHandler);
+router.get("/analytics", analyticsHandler);
+router.post("/addVistor", addVistorHandler);
+router.get("/visitors", visitorsHandler);
 
 module.exports = router;
