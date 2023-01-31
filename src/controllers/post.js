@@ -737,6 +737,91 @@ async function customizeHandler(req, res) {
   }
 }
 
+async function searchHandler(req, res) {
+  try {
+    const { q } = req.body;
+    const content = await prisma.post.findMany({
+      where: {
+        content: {
+          name: {
+            contains: q,
+          },
+        },
+      },
+      include: {
+        location: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    const location = await prisma.post.findMany({
+      where: {
+        location: {
+          name: {
+            contains: q,
+          },
+        },
+      },
+      include: {
+        location: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    const title = await prisma.post.findMany({
+      where: {
+        title: {
+          contains: q,
+        },
+      },
+      include: {
+        location: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    const description = await prisma.post.findMany({
+      where: {
+        description: {
+          contains: q,
+        },
+      },
+      include: {
+        location: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    let all = [...title, ...description, ...content, ...location];
+
+    all = all.map((item, pos) => {
+      return JSON.stringify(item);
+    });
+
+    all = all.filter((item, pos) => all.indexOf(item) == pos);
+
+    all = all.map((item, pos) => {
+      return JSON.parse(item);
+    });
+
+    res.send(all);
+  } catch (error) {
+    res.sendStatus(500);
+  }
+}
+
 module.exports = {
   postsHomeHandler,
   addPostHandler,
@@ -760,4 +845,5 @@ module.exports = {
   commentsHandler,
   getAllCommentsHandler,
   customizeHandler,
+  searchHandler,
 };
