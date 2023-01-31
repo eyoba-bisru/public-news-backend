@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,118 +7,148 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int        @id @default(autoincrement())
-  email     String     @unique
-  name      String
-  password  String
-  role      Role       @default(USER)
-  suspended Boolean    @default(false)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  Post      Post[]
-  Bookmark  Bookmark[]
-  Like      Like[]
-  Comment   Comment[]
-  Report    Report[]
-  Unlike    Unlike[]
-}
-
-enum Role {
-  USER
-  ADMIN
-  EDITOR
-}
-
-model Bookmark {
+model bookmark {
   id     Int  @id @default(autoincrement())
-  user   User @relation(fields: [userId], references: [id])
-  post   Post @relation(fields: [postId], references: [id])
   userId Int
   postId Int
+  post   post @relation(fields: [postId], references: [id], map: "Bookmark_postId_fkey")
+  user   user @relation(fields: [userId], references: [id], map: "Bookmark_userId_fkey")
 
-  @@unique([userId, postId])
+  @@unique([userId, postId], map: "Bookmark_userId_postId_key")
+  @@index([postId], map: "Bookmark_postId_fkey")
 }
 
-model Post {
+model comment {
+  id     Int    @id @default(autoincrement())
+  name   String
+  userId Int
+  postId Int
+  post   post   @relation(fields: [postId], references: [id], map: "Comment_postId_fkey")
+  user   user   @relation(fields: [userId], references: [id], map: "Comment_userId_fkey")
+
+  @@index([postId], map: "Comment_postId_fkey")
+  @@index([userId], map: "Comment_userId_fkey")
+}
+
+model content {
+  id        Int         @id @default(autoincrement())
+  name      String      @unique(map: "Content_name_key")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime
+  customize customize[]
+  post      post[]
+}
+
+model customize {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  contentId Int
+  content   content @relation(fields: [contentId], references: [id], map: "Customize_contentId_fkey")
+  user      user    @relation(fields: [userId], references: [id], map: "Customize_userId_fkey")
+
+  @@index([contentId], map: "Customize_contentId_fkey")
+  @@index([userId], map: "Customize_userId_fkey")
+}
+
+model language {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique(map: "Language_name_key")
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  post      post[]
+}
+
+model like {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  postId Int
+  post   post @relation(fields: [postId], references: [id], map: "Like_postId_fkey")
+  user   user @relation(fields: [userId], references: [id], map: "Like_userId_fkey")
+
+  @@index([postId], map: "Like_postId_fkey")
+  @@index([userId], map: "Like_userId_fkey")
+}
+
+model location {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique(map: "Location_name_key")
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  post      post[]
+}
+
+model post {
   id          Int        @id @default(autoincrement())
   title       String
   description String     @db.LongText
   imageUrl    String
   sources     String?
-  location    Location   @relation(fields: [locationId], references: [id])
-  user        User       @relation(fields: [userId], references: [id])
   createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  updatedAt   DateTime
   userId      Int
   locationId  Int
-  language    Language   @relation(fields: [languageId], references: [id])
   languageId  Int
-  content     Content    @relation(fields: [contentId], references: [id])
   contentId   Int
-  Bookmark    Bookmark[]
-  Like        Like[]
-  Comment     Comment[]
-  Report      Report[]
-  Unlike      Unlike[]
+  bookmark    bookmark[]
+  comment     comment[]
+  like        like[]
+  content     content    @relation(fields: [contentId], references: [id], map: "Post_contentId_fkey")
+  language    language   @relation(fields: [languageId], references: [id], map: "Post_languageId_fkey")
+  location    location   @relation(fields: [locationId], references: [id], map: "Post_locationId_fkey")
+  user        user       @relation(fields: [userId], references: [id], map: "Post_userId_fkey")
+  report      report[]
+  unlike      unlike[]
 
-  @@index([createdAt])
+  @@index([contentId], map: "Post_contentId_fkey")
+  @@index([createdAt], map: "Post_createdAt_idx")
+  @@index([languageId], map: "Post_languageId_fkey")
+  @@index([locationId], map: "Post_locationId_fkey")
+  @@index([userId], map: "Post_userId_fkey")
 }
 
-model Location {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Post      Post[]
-}
-
-model Content {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Post      Post[]
-}
-
-model Language {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Post      Post[]
-}
-
-model Like {
-  id     Int  @id @default(autoincrement())
-  user   User @relation(fields: [userId], references: [id])
+model report {
+  id     Int    @id @default(autoincrement())
+  name   String
   userId Int
-  post   Post @relation(fields: [postId], references: [id])
   postId Int
+  post   post   @relation(fields: [postId], references: [id], map: "Report_postId_fkey")
+  user   user   @relation(fields: [userId], references: [id], map: "Report_userId_fkey")
+
+  @@index([postId], map: "Report_postId_fkey")
+  @@index([userId], map: "Report_userId_fkey")
 }
 
-model Unlike {
+model unlike {
   id     Int   @id @default(autoincrement())
-  user   User  @relation(fields: [userId], references: [id])
-  Post   Post? @relation(fields: [postId], references: [id])
+  userId Int
   postId Int?
-  userId Int
+  post   post? @relation(fields: [postId], references: [id], map: "Unlike_postId_fkey")
+  user   user  @relation(fields: [userId], references: [id], map: "Unlike_userId_fkey")
+
+  @@index([postId], map: "Unlike_postId_fkey")
+  @@index([userId], map: "Unlike_userId_fkey")
 }
 
-model Comment {
-  id     Int    @id @default(autoincrement())
-  name   String
-  user   User   @relation(fields: [userId], references: [id])
-  userId Int
-  post   Post   @relation(fields: [postId], references: [id])
-  postId Int
+model user {
+  id        Int         @id @default(autoincrement())
+  email     String      @unique(map: "User_email_key")
+  name      String
+  password  String
+  role      user_role   @default(USER)
+  suspended Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime
+  bookmark  bookmark[]
+  comment   comment[]
+  customize customize[]
+  like      like[]
+  post      post[]
+  report    report[]
+  unlike    unlike[]
 }
 
-model Report {
-  id     Int    @id @default(autoincrement())
-  name   String
-  user   User   @relation(fields: [userId], references: [id])
-  userId Int
-  post   Post   @relation(fields: [postId], references: [id])
-  postId Int
+enum user_role {
+  USER
+  ADMIN
+  EDITOR
 }
