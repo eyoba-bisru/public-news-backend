@@ -737,6 +737,160 @@ async function customizeHandler(req, res) {
   }
 }
 
+async function searchHandler(req, res) {
+  try {
+    const { q } = req.body;
+    const content = await prisma.post.findMany({
+      where: {
+        content: {
+          name: {
+            contains: q,
+          },
+        },
+      },
+      include: {
+        location: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    const location = await prisma.post.findMany({
+      where: {
+        location: {
+          name: {
+            contains: q,
+          },
+        },
+      },
+      include: {
+        location: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    const title = await prisma.post.findMany({
+      where: {
+        title: {
+          contains: q,
+        },
+      },
+      include: {
+        location: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    const description = await prisma.post.findMany({
+      where: {
+        description: {
+          contains: q,
+        },
+      },
+      include: {
+        location: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    let all = [...title, ...description, ...content, ...location];
+
+    all = all.map((item, pos) => {
+      return JSON.stringify(item);
+    });
+
+    all = all.filter((item, pos) => all.indexOf(item) == pos);
+
+    all = all.map((item, pos) => {
+      return JSON.parse(item);
+    });
+
+    res.send(all);
+  } catch (error) {
+    res.sendStatus(500);
+  }
+}
+
+async function analyticsHandler(req, res) {
+  let sport = await prisma.post.count({
+    where: {
+      content: {
+        name: "Sport",
+      },
+    },
+  });
+  let bussiness = await prisma.post.count({
+    where: {
+      content: {
+        name: "Bussiness",
+      },
+    },
+  });
+  let culture = await prisma.post.count({
+    where: {
+      content: {
+        name: "Culture",
+      },
+    },
+  });
+  let health = await prisma.post.count({
+    where: {
+      content: {
+        name: "Health",
+      },
+    },
+  });
+  let education = await prisma.post.count({
+    where: {
+      content: {
+        name: "Education",
+      },
+    },
+  });
+  let sciTech = await prisma.post.count({
+    where: {
+      content: {
+        name: "Sci-Tech",
+      },
+    },
+  });
+  let politics = await prisma.post.count({
+    where: {
+      content: {
+        name: "Politics",
+      },
+    },
+  });
+
+  res.send([sport, health, sciTech, education, bussiness, culture, politics]);
+}
+
+const fs = require("fs");
+const path = require("path");
+
+async function addVistorHandler(req, res) {
+  let count = parseInt(fs.readFileSync("public/visitor.txt", "utf-8"));
+  count = count + 1 + "";
+  fs.writeFileSync("public/visitor.txt", count);
+  res.send("successfull");
+}
+
+async function visitorsHandler(req, res) {
+  const count = parseInt(fs.readFileSync("public/visitor.txt", "utf-8"));
+  res.json(count);
+}
+
 module.exports = {
   postsHomeHandler,
   addPostHandler,
@@ -760,4 +914,8 @@ module.exports = {
   commentsHandler,
   getAllCommentsHandler,
   customizeHandler,
+  searchHandler,
+  analyticsHandler,
+  addVistorHandler,
+  visitorsHandler,
 };
