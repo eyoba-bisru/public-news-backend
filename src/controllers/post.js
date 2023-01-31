@@ -1,10 +1,87 @@
 const { prisma } = require("../../prisma/client/prisma-client");
+const { categoryFetch } = require("../utils/categoryFetch.utils");
 const { checkLiked } = require("../utils/checkLiked.utils");
 const { checkUnliked } = require("../utils/checkUnliked.utils");
 const { upload } = require("../utils/imageUpload.utils");
 
 async function postsHomeHandler(req, res) {
   try {
+    const user = req?.user;
+    if (user) {
+      const customize = await prisma.customize.findMany({
+        where: {
+          userId: user.id,
+        },
+        select: {
+          contentId: true,
+        },
+      });
+      let length = customize.length;
+
+      if (length == 0) {
+        const posts = await prisma.post.findMany({
+          take: 16,
+          orderBy: [
+            {
+              createdAt: "desc",
+            },
+          ],
+          include: {
+            location: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        });
+        return res.send(posts);
+      }
+
+      let sport = Math.round(
+        (customize.filter((c) => c.contentId == 2).length * 16) / length
+      );
+      let health = Math.round(
+        (customize.filter((c) => c.contentId == 3).length * 16) / length
+      );
+      let sciTech = Math.round(
+        (customize.filter((c) => c.contentId == 4).length * 16) / length
+      );
+      let educ = Math.round(
+        (customize.filter((c) => c.contentId == 8).length * 16) / length
+      );
+      let bussiness = Math.round(
+        (customize.filter((c) => c.contentId == 9).length * 16) / length
+      );
+      let culture = Math.round(
+        (customize.filter((c) => c.contentId == 10).length * 16) / length
+      );
+      let politics = Math.round(
+        (customize.filter((c) => c.contentId == 12).length * 16) / length
+      );
+
+      const sports = await categoryFetch(sport, 2);
+      const healths = await categoryFetch(health, 3);
+      const sciTechs = await categoryFetch(sciTech, 4);
+      const educs = await categoryFetch(educ, 8);
+      const bussinesses = await categoryFetch(bussiness, 9);
+      const cultures = await categoryFetch(culture, 10);
+      const politicses = await categoryFetch(politics, 12);
+
+      const total = [
+        ...sports,
+        ...healths,
+        ...sciTechs,
+        ...educs,
+        ...bussinesses,
+        ...cultures,
+        ...politicses,
+      ];
+      console.log(total);
+
+      return res.send(total);
+    }
+
+    console.log("not user");
     const posts = await prisma.post.findMany({
       take: 16,
       orderBy: [
@@ -18,11 +95,6 @@ async function postsHomeHandler(req, res) {
             name: true,
           },
         },
-        // user: {
-        //   select: {
-        //     shortName: true,
-        //   },
-        // },
       },
     });
 
@@ -644,6 +716,27 @@ async function getAllCommentsHandler(req, res) {
   }
 }
 
+async function customizeHandler(req, res) {
+  try {
+    const { id } = req.user;
+    let { contentId } = req.body;
+
+    contentId = parseInt(contentId);
+
+    const customize = await prisma.customize.create({
+      data: {
+        userId: id,
+        contentId,
+      },
+    });
+
+    res.send(customize);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+}
+
 module.exports = {
   postsHomeHandler,
   addPostHandler,
@@ -666,4 +759,5 @@ module.exports = {
   isUnlikedHandler,
   commentsHandler,
   getAllCommentsHandler,
+  customizeHandler,
 };

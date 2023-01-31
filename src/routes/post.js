@@ -22,6 +22,7 @@ const {
   isUnlikedHandler,
   commentsHandler,
   getAllCommentsHandler,
+  customizeHandler,
 } = require("../controllers/post");
 const fileExtLimiter = require("../middlewares/fileExtLimiter");
 const fileSizeLimiter = require("../middlewares/fileSizeLimiter");
@@ -58,5 +59,6 @@ router.post("/isUnliked", isUnlikedHandler);
 router.post("/numOfLiked", numOfLikedHandler);
 router.post("/comments", commentsHandler);
 router.post("/getAllComments", getAllCommentsHandler);
+router.post("/customize", customizeHandler);
 
 module.exports = router;
