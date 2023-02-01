@@ -31,14 +31,12 @@ async function createUserHandler(req, res) {
     });
 
     const session = createSession(
+      user.id,
       user.email,
       user.name,
       user.role,
-      false,
       user.logo
     );
-
-    await sendMail(user.email, user.name, user.role, session.sessionId);
 
     // create access token
     const accessToken = signJWT(
