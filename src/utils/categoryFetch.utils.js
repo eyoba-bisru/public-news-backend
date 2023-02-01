@@ -14,6 +14,11 @@ async function categoryFetch(take, id) {
           name: true,
         },
       },
+      content: {
+        select: {
+          name: true,
+        },
+      },
     },
   });
 
