@@ -148,7 +148,9 @@ async function addPostHandler(req, res) {
 }
 
 async function loadMoreHandler(req, res) {
-  const { contentId, id } = req.body;
+  let { contentId, id } = req.body;
+  contentId = parseInt(contentId);
+  id = parseInt(id);
 
   if (!contentId) return res.sendStatus(400);
   if (!id) return res.sendStatus(400);
@@ -172,6 +174,7 @@ async function loadMoreHandler(req, res) {
 
     res.send(posts);
   } catch (error) {
+    console.log(error);
     res.sendStatus(500);
   }
 }
@@ -243,7 +246,15 @@ async function contentPostsHandler(req, res) {
         },
       },
     });
-    res.send(posts);
+
+    const count = await prisma.post.count({
+      where: {
+        content: {
+          name,
+        },
+      },
+    });
+    res.send({ posts, count });
   } catch (error) {
     res.status(404).send("Category doesn't found");
   }
