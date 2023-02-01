@@ -121,6 +121,12 @@ async function loginHandler(req, res) {
 
   if (!pass) return res.status(401).send('Invalid email or password')
 
+  if (user.role == "EDITOR") {
+    if (user.suspended == true) {
+      return res.status(401).send("You are suspended contact the admin");
+    }
+  }
+
   const session = createSession(
     user.id,
     user.email,
