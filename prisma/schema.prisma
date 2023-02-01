@@ -34,7 +34,7 @@ model content {
   id        Int         @id @default(autoincrement())
   name      String      @unique(map: "Content_name_key")
   createdAt DateTime    @default(now())
-  updatedAt DateTime
+  updatedAt DateTime    @updatedAt
   customize customize[]
   post      post[]
 }
@@ -54,7 +54,7 @@ model language {
   id        Int      @id @default(autoincrement())
   name      String   @unique(map: "Language_name_key")
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
   post      post[]
 }
 
@@ -73,7 +73,7 @@ model location {
   id        Int      @id @default(autoincrement())
   name      String   @unique(map: "Location_name_key")
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
   post      post[]
 }
 
@@ -84,7 +84,7 @@ model post {
   imageUrl    String
   sources     String?
   createdAt   DateTime   @default(now())
-  updatedAt   DateTime
+  updatedAt   DateTime   @updatedAt
   userId      Int
   locationId  Int
   languageId  Int
@@ -137,7 +137,7 @@ model user {
   role      user_role   @default(USER)
   suspended Boolean     @default(false)
   createdAt DateTime    @default(now())
-  updatedAt DateTime
+  updatedAt DateTime    @updatedAt
   bookmark  bookmark[]
   comment   comment[]
   customize customize[]
