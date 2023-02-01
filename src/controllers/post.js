@@ -181,6 +181,71 @@ async function loadMoreHandler(req, res) {
   }
 }
 
+async function loadMoreLanguageHandler(req, res) {
+  let { languageId, id } = req.body;
+  languageId = parseInt(languageId);
+  id = parseInt(id);
+
+  if (!languageId) return res.sendStatus(400);
+  if (!id) return res.sendStatus(400);
+
+  try {
+    const posts = await prisma.post.findMany({
+      where: {
+        languageId,
+      },
+      take: 4,
+      cursor: {
+        id,
+      },
+      skip: 1,
+      orderBy: [
+        {
+          createdAt: "desc",
+        },
+      ],
+    });
+
+    res.send(posts);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+}
+async function loadMoreLocationHandler(req, res) {
+  let { locationId, id } = req.body;
+  locationId = parseInt(locationId);
+  id = parseInt(id);
+
+  console.log(locationId, id);
+
+  if (!locationId) return res.sendStatus(400);
+  if (!id) return res.sendStatus(400);
+
+  try {
+    const posts = await prisma.post.findMany({
+      where: {
+        locationId,
+      },
+      take: 4,
+      cursor: {
+        id,
+      },
+      skip: 1,
+      orderBy: [
+        {
+          createdAt: "desc",
+        },
+      ],
+    });
+
+    res.send(posts);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+}
+
 async function postsCategoryHandler(req, res) {
   const { name } = req.body;
 
@@ -295,7 +360,15 @@ async function languagePostsHandler(req, res) {
         },
       },
     });
-    res.send(posts);
+
+    const count = await prisma.post.count({
+      where: {
+        language: {
+          name,
+        },
+      },
+    });
+    res.send({ posts, count });
   } catch (error) {
     res.status(404).send("Category doesn't found");
   }
@@ -335,7 +408,14 @@ async function locationPostsHandler(req, res) {
         },
       },
     });
-    res.send(posts);
+    const count = await prisma.post.count({
+      where: {
+        language: {
+          name,
+        },
+      },
+    });
+    res.send({ posts, count });
   } catch (error) {
     console.log(error);
     res.status(404).send("Category doesn't found");
@@ -970,6 +1050,8 @@ module.exports = {
   postsHomeHandler,
   addPostHandler,
   loadMoreHandler,
+  loadMoreLanguageHandler,
+  loadMoreLocationHandler,
   postsCategoryHandler,
   postHandler,
   recommendedHandler,

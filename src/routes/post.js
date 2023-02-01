@@ -1,5 +1,5 @@
-const express = require('express')
-const fileUpload = require('express-fileupload')
+const express = require("express");
+const fileUpload = require("express-fileupload");
 const {
   postsHomeHandler,
   addPostHandler,
@@ -30,6 +30,8 @@ const {
   analyticsHandler,
   addVistorHandler,
   visitorsHandler,
+  loadMoreLanguageHandler,
+  loadMoreLocationHandler,
 } = require("../controllers/post");
 const fileExtLimiter = require("../middlewares/fileExtLimiter");
 const fileSizeLimiter = require("../middlewares/fileSizeLimiter");
@@ -37,22 +39,24 @@ const filesPayloadExists = require("../middlewares/filesPayloadExists");
 const { requireUser } = require("../middlewares/requireUser");
 const router = express.Router();
 
-router.post('/', postHandler)
-router.get('/postsHome', postsHomeHandler)
+router.post("/", postHandler);
+router.get("/postsHome", postsHomeHandler);
 router.post(
-  '/addPost',
+  "/addPost",
   requireUser,
   fileUpload({ createParentPath: true }),
   filesPayloadExists,
-  fileExtLimiter(['.png', '.jpg', '.jpeg']),
+  fileExtLimiter([".png", ".jpg", ".jpeg"]),
   fileSizeLimiter,
   addPostHandler
-)
+);
 
-router.get('/reportFetch', reportFetchHandler)
-router.delete('/reportDelete', reportDeleteHandler)
-router.post('/reports', reportsHandler)
+router.get("/reportFetch", reportFetchHandler);
+router.delete("/reportDelete", reportDeleteHandler);
+router.post("/reports", reportsHandler);
 router.post("/loadMore", loadMoreHandler);
+router.post("/loadMoreLanguage", loadMoreLanguageHandler);
+router.post("/loadMoreLocation", loadMoreLocationHandler);
 router.post("/postsCategory", postsCategoryHandler);
 router.post("/recommended", recommendedHandler);
 router.post("/contentPosts", contentPostsHandler);
