@@ -1,5 +1,5 @@
-const express = require("express");
-const fileUpload = require("express-fileupload");
+const express = require('express')
+const fileUpload = require('express-fileupload')
 const {
   postsHomeHandler,
   addPostHandler,
@@ -22,6 +22,9 @@ const {
   isUnlikedHandler,
   commentsHandler,
   getAllCommentsHandler,
+  reportsHandler,
+  reportFetchHandler,
+  reportDeleteHandler,
   customizeHandler,
   searchHandler,
   analyticsHandler,
@@ -34,17 +37,21 @@ const filesPayloadExists = require("../middlewares/filesPayloadExists");
 const { requireUser } = require("../middlewares/requireUser");
 const router = express.Router();
 
-router.post("/", postHandler);
-router.get("/postsHome", postsHomeHandler);
+router.post('/', postHandler)
+router.get('/postsHome', postsHomeHandler)
 router.post(
-  "/addPost",
+  '/addPost',
   requireUser,
   fileUpload({ createParentPath: true }),
   filesPayloadExists,
-  fileExtLimiter([".png", ".jpg", ".jpeg"]),
+  fileExtLimiter(['.png', '.jpg', '.jpeg']),
   fileSizeLimiter,
   addPostHandler
-);
+)
+
+router.get('/reportFetch', reportFetchHandler)
+router.delete('/reportDelete', reportDeleteHandler)
+router.post('/reports', reportsHandler)
 router.post("/loadMore", loadMoreHandler);
 router.post("/postsCategory", postsCategoryHandler);
 router.post("/recommended", recommendedHandler);
