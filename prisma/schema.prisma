@@ -11,7 +11,7 @@ model bookmark {
   id     Int  @id @default(autoincrement())
   userId Int
   postId Int
-  post   post @relation(fields: [postId], references: [id], map: "Bookmark_postId_fkey")
+  post   post @relation(fields: [postId], references: [id], map: "Bookmark_postId_fkey", onDelete: Cascade)
   user   user @relation(fields: [userId], references: [id], map: "Bookmark_userId_fkey")
 
   @@unique([userId, postId], map: "Bookmark_userId_postId_key")
@@ -23,7 +23,7 @@ model comment {
   name   String
   userId Int
   postId Int
-  post   post   @relation(fields: [postId], references: [id], map: "Comment_postId_fkey")
+  post   post   @relation(fields: [postId], references: [id], map: "Comment_postId_fkey", onDelete: Cascade)
   user   user   @relation(fields: [userId], references: [id], map: "Comment_userId_fkey")
 
   @@index([postId], map: "Comment_postId_fkey")
@@ -62,7 +62,7 @@ model like {
   id     Int  @id @default(autoincrement())
   userId Int
   postId Int
-  post   post @relation(fields: [postId], references: [id], map: "Like_postId_fkey")
+  post   post @relation(fields: [postId], references: [id], map: "Like_postId_fkey", onDelete: Cascade)
   user   user @relation(fields: [userId], references: [id], map: "Like_userId_fkey")
 
   @@index([postId], map: "Like_postId_fkey")
@@ -111,7 +111,7 @@ model report {
   name   String
   userId Int
   postId Int
-  post   post   @relation(fields: [postId], references: [id], map: "Report_postId_fkey")
+  post   post   @relation(fields: [postId], references: [id], map: "Report_postId_fkey", onDelete: Cascade)
   user   user   @relation(fields: [userId], references: [id], map: "Report_userId_fkey")
 
   @@index([postId], map: "Report_postId_fkey")
@@ -122,7 +122,7 @@ model unlike {
   id     Int   @id @default(autoincrement())
   userId Int
   postId Int?
-  post   post? @relation(fields: [postId], references: [id], map: "Unlike_postId_fkey")
+  post   post? @relation(fields: [postId], references: [id], map: "Unlike_postId_fkey", onDelete: Cascade)
   user   user  @relation(fields: [userId], references: [id], map: "Unlike_userId_fkey")
 
   @@index([postId], map: "Unlike_postId_fkey")
