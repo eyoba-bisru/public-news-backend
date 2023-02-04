@@ -16,6 +16,8 @@ const {
   createEditorHandler,
   numOfSubsHandler,
   changePasswordHandler,
+  forgotPasswordHandler,
+  resetHandler,
 } = require("../controllers/auth");
 const { requireUser } = require("../middlewares/requireUser");
 
@@ -51,6 +53,8 @@ router.post("/login", loginHandler);
 //     }
 //   }
 // );
+router.post("/forgotpassword", forgotPasswordHandler);
+router.post("/reset", resetHandler);
 
 router.use(requireUser);
 
