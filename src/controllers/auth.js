@@ -30,6 +30,8 @@ async function createUserHandler(req, res) {
       },
     });
 
+    console.log(user);
+
     const session = createSession(
       user.id,
       user.email,
@@ -41,6 +43,7 @@ async function createUserHandler(req, res) {
     // create access token
     const accessToken = signJWT(
       {
+        id: user.id,
         email: user.email,
         name: user.name,
         role: user.role,
