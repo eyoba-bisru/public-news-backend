@@ -33,6 +33,7 @@ const {
   loadMoreLanguageHandler,
   loadMoreLocationHandler,
   deletePostHandler,
+  handleEditPost,
 } = require('../controllers/post')
 const fileExtLimiter = require('../middlewares/fileExtLimiter')
 const fileSizeLimiter = require('../middlewares/fileSizeLimiter')
@@ -81,4 +82,13 @@ router.get('/analytics', analyticsHandler)
 router.post('/addVistor', addVistorHandler)
 router.get('/visitors', visitorsHandler)
 router.delete('/deletePost', deletePostHandler)
+router.patch(
+  '/editPost',
+  requireUser,
+  fileUpload({ createParentPath: true }),
+  filesPayloadExists,
+  fileExtLimiter(['.png', '.jpg', '.jpeg']),
+  fileSizeLimiter,
+  handleEditPost
+)
 module.exports = router
