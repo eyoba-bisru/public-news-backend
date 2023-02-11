@@ -1,12 +1,12 @@
-const { prisma } = require('../../prisma/client/prisma-client')
-const { categoryFetch } = require('../utils/categoryFetch.utils')
-const { checkLiked } = require('../utils/checkLiked.utils')
-const { checkUnliked } = require('../utils/checkUnliked.utils')
-const { upload } = require('../utils/imageUpload.utils')
+const { prisma } = require("../../prisma/client/prisma-client");
+const { categoryFetch } = require("../utils/categoryFetch.utils");
+const { checkLiked } = require("../utils/checkLiked.utils");
+const { checkUnliked } = require("../utils/checkUnliked.utils");
+const { upload } = require("../utils/imageUpload.utils");
 
 async function postsHomeHandler(req, res) {
   try {
-    const user = req?.user
+    const user = req?.user;
     if (user) {
       const customize = await prisma.customize.findMany({
         where: {
@@ -15,19 +15,19 @@ async function postsHomeHandler(req, res) {
         select: {
           contentId: true,
         },
-      })
+      });
 
-      console.log(user)
-      let length = customize.length
+      console.log(user);
+      let length = customize.length;
 
-      console.log(length)
+      console.log(length);
 
       if (length == 0) {
         const posts = await prisma.post.findMany({
           take: 16,
           orderBy: [
             {
-              createdAt: 'desc',
+              createdAt: "desc",
             },
           ],
           include: {
@@ -42,39 +42,39 @@ async function postsHomeHandler(req, res) {
               },
             },
           },
-        })
-        return res.send(posts)
+        });
+        return res.send(posts);
       }
 
       let sport = Math.round(
         (customize.filter((c) => c.contentId == 2).length * 16) / length
-      )
+      );
       let health = Math.round(
         (customize.filter((c) => c.contentId == 3).length * 16) / length
-      )
+      );
       let sciTech = Math.round(
         (customize.filter((c) => c.contentId == 4).length * 16) / length
-      )
+      );
       let educ = Math.round(
         (customize.filter((c) => c.contentId == 8).length * 16) / length
-      )
+      );
       let bussiness = Math.round(
         (customize.filter((c) => c.contentId == 9).length * 16) / length
-      )
+      );
       let culture = Math.round(
         (customize.filter((c) => c.contentId == 10).length * 16) / length
-      )
+      );
       let politics = Math.round(
         (customize.filter((c) => c.contentId == 12).length * 16) / length
-      )
+      );
 
-      const sports = await categoryFetch(sport, 2)
-      const healths = await categoryFetch(health, 3)
-      const sciTechs = await categoryFetch(sciTech, 4)
-      const educs = await categoryFetch(educ, 8)
-      const bussinesses = await categoryFetch(bussiness, 9)
-      const cultures = await categoryFetch(culture, 10)
-      const politicses = await categoryFetch(politics, 12)
+      const sports = await categoryFetch(sport, 2);
+      const healths = await categoryFetch(health, 3);
+      const sciTechs = await categoryFetch(sciTech, 4);
+      const educs = await categoryFetch(educ, 8);
+      const bussinesses = await categoryFetch(bussiness, 9);
+      const cultures = await categoryFetch(culture, 10);
+      const politicses = await categoryFetch(politics, 12);
 
       const total = [
         ...sports,
@@ -84,18 +84,18 @@ async function postsHomeHandler(req, res) {
         ...bussinesses,
         ...cultures,
         ...politicses,
-      ]
+      ];
       // console.log(total);
 
-      return res.send(total)
+      return res.send(total);
     }
 
-    console.log('not user')
+    console.log("not user");
     const posts = await prisma.post.findMany({
       take: 16,
       orderBy: [
         {
-          createdAt: 'desc',
+          createdAt: "desc",
         },
       ],
       include: {
@@ -110,38 +110,38 @@ async function postsHomeHandler(req, res) {
           },
         },
       },
-    })
+    });
 
-    res.send(posts)
+    res.send(posts);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 
 async function addPostHandler(req, res) {
-  const { email, role } = req.user
+  const { email, role } = req.user;
 
-  if (!email) return res.status(401).send('Permission denied')
+  if (!email) return res.status(401).send("Permission denied");
 
-  if (role != 'EDITOR') return res.status(401).send('Permission denied')
+  if (role != "EDITOR") return res.status(401).send("Permission denied");
 
   try {
     const { id: userId } = await prisma.user.findUnique({
       where: {
         email,
       },
-    })
+    });
 
     let { description, title, contentId, languageId, locationId, sources } =
-      req.body
+      req.body;
 
-    contentId = parseInt(contentId)
-    languageId = parseInt(languageId)
-    locationId = parseInt(locationId)
-    const files = req.files
+    contentId = parseInt(contentId);
+    languageId = parseInt(languageId);
+    locationId = parseInt(locationId);
+    const files = req.files;
 
-    const imageUrl = upload(files)
+    const imageUrl = upload(files);
 
     const post = await prisma.post.create({
       data: {
@@ -154,22 +154,22 @@ async function addPostHandler(req, res) {
         userId,
         sources,
       },
-    })
+    });
 
-    res.send(post)
+    res.send(post);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 
 async function loadMoreHandler(req, res) {
-  let { contentId, id } = req.body
-  contentId = parseInt(contentId)
-  id = parseInt(id)
+  let { contentId, id } = req.body;
+  contentId = parseInt(contentId);
+  id = parseInt(id);
 
-  if (!contentId) return res.sendStatus(400)
-  if (!id) return res.sendStatus(400)
+  if (!contentId) return res.sendStatus(400);
+  if (!id) return res.sendStatus(400);
 
   try {
     const posts = await prisma.post.findMany({
@@ -183,25 +183,25 @@ async function loadMoreHandler(req, res) {
       skip: 1,
       orderBy: [
         {
-          createdAt: 'desc',
+          createdAt: "desc",
         },
       ],
-    })
+    });
 
-    res.send(posts)
+    res.send(posts);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 
 async function loadMoreLanguageHandler(req, res) {
-  let { languageId, id } = req.body
-  languageId = parseInt(languageId)
-  id = parseInt(id)
+  let { languageId, id } = req.body;
+  languageId = parseInt(languageId);
+  id = parseInt(id);
 
-  if (!languageId) return res.sendStatus(400)
-  if (!id) return res.sendStatus(400)
+  if (!languageId) return res.sendStatus(400);
+  if (!id) return res.sendStatus(400);
 
   try {
     const posts = await prisma.post.findMany({
@@ -215,26 +215,26 @@ async function loadMoreLanguageHandler(req, res) {
       skip: 1,
       orderBy: [
         {
-          createdAt: 'desc',
+          createdAt: "desc",
         },
       ],
-    })
+    });
 
-    res.send(posts)
+    res.send(posts);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 async function loadMoreLocationHandler(req, res) {
-  let { locationId, id } = req.body
-  locationId = parseInt(locationId)
-  id = parseInt(id)
+  let { locationId, id } = req.body;
+  locationId = parseInt(locationId);
+  id = parseInt(id);
 
-  console.log(locationId, id)
+  console.log(locationId, id);
 
-  if (!locationId) return res.sendStatus(400)
-  if (!id) return res.sendStatus(400)
+  if (!locationId) return res.sendStatus(400);
+  if (!id) return res.sendStatus(400);
 
   try {
     const posts = await prisma.post.findMany({
@@ -248,32 +248,32 @@ async function loadMoreLocationHandler(req, res) {
       skip: 1,
       orderBy: [
         {
-          createdAt: 'desc',
+          createdAt: "desc",
         },
       ],
-    })
+    });
 
-    res.send(posts)
+    res.send(posts);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 
 async function postsCategoryHandler(req, res) {
-  const { name } = req.body
+  const { name } = req.body;
 
-  if (!name) return res.sendStatus(400)
+  if (!name) return res.sendStatus(400);
 
   try {
     const { id: contentId } = await prisma.content.findFirst({
       where: {
         name: {
           equals: name,
-          mode: 'insensitive',
+          mode: "insensitive",
         },
       },
-    })
+    });
 
     const posts = await prisma.post.findMany({
       take: 6,
@@ -282,21 +282,21 @@ async function postsCategoryHandler(req, res) {
       },
       orderBy: [
         {
-          createdAt: 'desc',
+          createdAt: "desc",
         },
       ],
-    })
-    res.send(posts)
+    });
+    res.send(posts);
   } catch (error) {
-    console.log(error)
-    res.status(404).send("Category doesn't found")
+    console.log(error);
+    res.status(404).send("Category doesn't found");
   }
 }
 
 async function contentPostsHandler(req, res) {
-  const { name } = req.body
+  const { name } = req.body;
 
-  if (!name) return res.sendStatus(400)
+  if (!name) return res.sendStatus(400);
 
   try {
     const posts = await prisma.post.findMany({
@@ -311,7 +311,7 @@ async function contentPostsHandler(req, res) {
       },
       orderBy: [
         {
-          createdAt: 'desc',
+          createdAt: "desc",
         },
       ],
       include: {
@@ -326,7 +326,7 @@ async function contentPostsHandler(req, res) {
           },
         },
       },
-    })
+    });
 
     const count = await prisma.post.count({
       where: {
@@ -334,16 +334,16 @@ async function contentPostsHandler(req, res) {
           name,
         },
       },
-    })
-    res.send({ posts, count })
+    });
+    res.send({ posts, count });
   } catch (error) {
-    res.status(404).send("Category doesn't found")
+    res.status(404).send("Category doesn't found");
   }
 }
 async function languagePostsHandler(req, res) {
-  const { name } = req.body
+  const { name } = req.body;
 
-  if (!name) return res.sendStatus(400)
+  if (!name) return res.sendStatus(400);
 
   try {
     const posts = await prisma.post.findMany({
@@ -358,7 +358,7 @@ async function languagePostsHandler(req, res) {
       },
       orderBy: [
         {
-          createdAt: 'desc',
+          createdAt: "desc",
         },
       ],
       include: {
@@ -373,7 +373,7 @@ async function languagePostsHandler(req, res) {
           },
         },
       },
-    })
+    });
 
     const count = await prisma.post.count({
       where: {
@@ -381,17 +381,17 @@ async function languagePostsHandler(req, res) {
           name,
         },
       },
-    })
-    res.send({ posts, count })
+    });
+    res.send({ posts, count });
   } catch (error) {
-    res.status(404).send("Category doesn't found")
+    res.status(404).send("Category doesn't found");
   }
 }
 async function locationPostsHandler(req, res) {
-  const { name } = req.body
-  console.log(name)
+  const { name } = req.body;
+  console.log(name);
 
-  if (!name) return res.sendStatus(400)
+  if (!name) return res.sendStatus(400);
 
   try {
     const posts = await prisma.post.findMany({
@@ -406,7 +406,7 @@ async function locationPostsHandler(req, res) {
       },
       orderBy: [
         {
-          createdAt: 'desc',
+          createdAt: "desc",
         },
       ],
       include: {
@@ -421,26 +421,26 @@ async function locationPostsHandler(req, res) {
           },
         },
       },
-    })
+    });
     const count = await prisma.post.count({
       where: {
         language: {
           name,
         },
       },
-    })
-    res.send({ posts, count })
+    });
+    res.send({ posts, count });
   } catch (error) {
-    console.log(error)
-    res.status(404).send("Category doesn't found")
+    console.log(error);
+    res.status(404).send("Category doesn't found");
   }
 }
 
 async function postHandler(req, res) {
-  let { id } = req.body
-  id = parseInt(id)
+  let { id } = req.body;
+  id = parseInt(id);
 
-  if (!id) return res.sendStatus(400)
+  if (!id) return res.sendStatus(400);
 
   try {
     const post = await prisma.post.findUnique({
@@ -476,20 +476,20 @@ async function postHandler(req, res) {
           },
         },
       },
-    })
+    });
 
-    res.send(post)
+    res.send(post);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 
 async function recommendedHandler(req, res) {
-  const { id, contentId } = req.body
+  const { id, contentId } = req.body;
 
-  if (!id) return res.sendStatus(400)
-  if (!contentId) return res.sendStatus(400)
+  if (!id) return res.sendStatus(400);
+  if (!contentId) return res.sendStatus(400);
 
   try {
     const recommended = await prisma.post.findMany({
@@ -507,49 +507,49 @@ async function recommendedHandler(req, res) {
       },
       orderBy: [
         {
-          createdAt: 'desc',
+          createdAt: "desc",
         },
       ],
-    })
+    });
 
-    res.send(recommended)
+    res.send(recommended);
   } catch (error) {
-    res.sendStatus(500)
+    res.sendStatus(500);
   }
 }
 
 async function numOfPostsHandler(req, res) {
-  const num = await prisma.post.count({})
+  const num = await prisma.post.count({});
 
-  res.status(200).json(num)
+  res.status(200).json(num);
 }
 
 async function bookmarkHandler(req, res) {
   try {
-    let { userId, postId } = req.body
+    let { userId, postId } = req.body;
 
-    postId = parseInt(postId)
+    postId = parseInt(postId);
 
     const bookmark = await prisma.bookmark.create({
       data: {
         userId,
         postId,
       },
-    })
+    });
 
-    res.send(bookmark)
+    res.send(bookmark);
   } catch (error) {
-    if (error.code === 'P2002') return res.status(500).send('Already added')
-    console.log(error)
-    res.sendStatus(500)
+    if (error.code === "P2002") return res.status(500).send("Already added");
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 
 async function removeBookmarkHandler(req, res) {
   try {
-    let { userId, postId } = req.body
+    let { userId, postId } = req.body;
 
-    postId = parseInt(postId)
+    postId = parseInt(postId);
 
     const bookmark = await prisma.bookmark.delete({
       where: {
@@ -558,19 +558,19 @@ async function removeBookmarkHandler(req, res) {
           postId,
         },
       },
-    })
+    });
 
-    res.send(bookmark)
+    res.send(bookmark);
   } catch (error) {
-    if (error.code === 'P2002') return res.status(500).send('Doesnot found')
-    console.log(error)
-    res.sendStatus(500)
+    if (error.code === "P2002") return res.status(500).send("Doesnot found");
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 
 async function bookmarksHandler(req, res) {
   try {
-    const { userId } = req.body
+    const { userId } = req.body;
     const posts = await prisma.post.findMany({
       where: {
         bookmark: {
@@ -586,23 +586,23 @@ async function bookmarksHandler(req, res) {
           },
         },
       },
-    })
+    });
 
-    res.send(posts)
+    res.send(posts);
   } catch (error) {
-    res.sendStatus(500)
+    res.sendStatus(500);
   }
 }
 
 async function postedNewsHandler(req, res) {
   try {
-    const { email } = req.user
+    const { email } = req.user;
     const { id } = await prisma.user.findUnique({
       where: {
         email,
       },
       select: { id: true },
-    })
+    });
     const posts = await prisma.post.findMany({
       where: {
         userId: id,
@@ -626,16 +626,16 @@ async function postedNewsHandler(req, res) {
           },
         },
       },
-    })
-    res.send(posts)
+    });
+    res.send(posts);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 async function reportFetchHandler(req, res) {
   try {
-    const { userId, postId, name } = req.body
+    const { userId, postId, name } = req.body;
     // console.log(userId)
     // console.log(postId)
     // console.log(name)
@@ -653,37 +653,37 @@ async function reportFetchHandler(req, res) {
           },
         },
       },
-    })
-    res.send(reports)
+    });
+    res.send(reports);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 async function reportDeleteHandler(req, res) {
   try {
-    let { id } = req.body
-    reportId = parseInt(id)
+    let { id } = req.body;
+    reportId = parseInt(id);
     const deleteReport = await prisma.report.delete({
       where: {
         id: reportId,
       },
-    })
-    res.send(deleteReport)
+    });
+    res.send(deleteReport);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 
 async function likeHandler(req, res) {
   try {
-    const { id } = req.user
-    let { postId } = req.body
-    postId = parseInt(postId)
+    const { id } = req.user;
+    let { postId } = req.body;
+    postId = parseInt(postId);
 
-    let isLiked = await checkLiked(id, postId)
-    let isUnliked = await checkUnliked(id, postId)
+    let isLiked = await checkLiked(id, postId);
+    let isUnliked = await checkUnliked(id, postId);
 
     if (!isUnliked.isUnliked) {
       if (isLiked.isLiked) {
@@ -692,17 +692,17 @@ async function likeHandler(req, res) {
             userId: id,
             postId,
           },
-        })
-        return res.send({ isLiked: false })
+        });
+        return res.send({ isLiked: false });
       } else {
         isLiked = await prisma.like.create({
           data: {
             userId: id,
             postId,
           },
-        })
-        console.log('added')
-        return res.send({ isLiked: true })
+        });
+        console.log("added");
+        return res.send({ isLiked: true });
       }
     } else {
       isUnliked = await prisma.unlike.deleteMany({
@@ -710,64 +710,64 @@ async function likeHandler(req, res) {
           userId: id,
           postId,
         },
-      })
+      });
 
       isLiked = await prisma.like.create({
         data: {
           userId: id,
           postId,
         },
-      })
-      console.log('added')
-      return res.send({ isLiked: true })
+      });
+      console.log("added");
+      return res.send({ isLiked: true });
     }
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 
 async function isLikedHandler(req, res) {
   try {
-    const { id } = req.user
-    let { postId } = req.body
-    postId = parseInt(postId)
+    const { id } = req.user;
+    let { postId } = req.body;
+    postId = parseInt(postId);
 
-    const isLiked = await checkLiked(id, postId)
+    const isLiked = await checkLiked(id, postId);
 
-    res.send(isLiked)
+    res.send(isLiked);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 
 async function numOfLikedHandler(req, res) {
   try {
-    let { postId } = req.body
-    postId = parseInt(postId)
+    let { postId } = req.body;
+    postId = parseInt(postId);
 
     const num = await prisma.like.count({
       where: {
         postId,
       },
-    })
+    });
 
-    res.json({ num })
+    res.json({ num });
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 
 async function unlikeHandler(req, res) {
   try {
-    const { id } = req.user
-    let { postId } = req.body
-    postId = parseInt(postId)
+    const { id } = req.user;
+    let { postId } = req.body;
+    postId = parseInt(postId);
 
-    let isLiked = await checkLiked(id, postId)
-    let isUnliked = await checkUnliked(id, postId)
+    let isLiked = await checkLiked(id, postId);
+    let isUnliked = await checkUnliked(id, postId);
 
     if (!isLiked.isLiked) {
       if (isUnliked.isUnliked) {
@@ -776,17 +776,17 @@ async function unlikeHandler(req, res) {
             userId: id,
             postId,
           },
-        })
-        return res.json({ isUnliked: false })
+        });
+        return res.json({ isUnliked: false });
       } else {
         isUnliked = await prisma.unlike.create({
           data: {
             userId: id,
             postId,
           },
-        })
-        console.log('added')
-        return res.send({ isUnliked: true })
+        });
+        console.log("added");
+        return res.send({ isUnliked: true });
       }
     } else {
       await prisma.like.deleteMany({
@@ -794,46 +794,46 @@ async function unlikeHandler(req, res) {
           userId: id,
           postId,
         },
-      })
-      console.log('removed')
+      });
+      console.log("removed");
 
       isUnliked = await prisma.unlike.create({
         data: {
           userId: id,
           postId,
         },
-      })
+      });
 
-      return res.send({ isUnliked: true })
+      return res.send({ isUnliked: true });
     }
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 
 async function isUnlikedHandler(req, res) {
   try {
-    const { id } = req.user
-    let { postId } = req.body
-    postId = parseInt(postId)
+    const { id } = req.user;
+    let { postId } = req.body;
+    postId = parseInt(postId);
 
-    const isUnliked = await checkUnliked(id, postId)
+    const isUnliked = await checkUnliked(id, postId);
 
-    res.send(isUnliked)
+    res.send(isUnliked);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 
 async function commentsHandler(req, res) {
   try {
-    const { id } = req.user
-    let { postId, name } = req.body
-    postId = parseInt(postId)
+    const { id } = req.user;
+    let { postId, name } = req.body;
+    postId = parseInt(postId);
 
-    console.log(name)
+    console.log(name);
 
     const comment = await prisma.comment.create({
       data: {
@@ -841,40 +841,40 @@ async function commentsHandler(req, res) {
         postId,
         userId: id,
       },
-    })
+    });
 
-    res.send(comment)
+    res.send(comment);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 async function reportsHandler(req, res) {
   try {
-    const { id } = req.user
-    let { postId, name } = req.body
-    postId = parseInt(postId)
+    const { id } = req.user;
+    let { postId, name } = req.body;
+    postId = parseInt(postId);
     const report = await prisma.report.create({
       data: {
         name,
         postId,
         userId: id,
       },
-    })
-    res.send(report)
-    console.log(name)
+    });
+    res.send(report);
+    console.log(name);
   } catch (error) {
-    console.log(error)
-    console.log('hi error')
-    res.sendStatus(500)
+    console.log(error);
+    console.log("hi error");
+    res.sendStatus(500);
   }
 }
 
 async function getAllCommentsHandler(req, res) {
   try {
-    let { postId } = req.body
+    let { postId } = req.body;
 
-    postId = parseInt(postId)
+    postId = parseInt(postId);
 
     const comments = await prisma.comment.findMany({
       where: {
@@ -884,42 +884,41 @@ async function getAllCommentsHandler(req, res) {
         user: {
           select: {
             name: true,
-            id: true,
           },
         },
       },
-    })
+    });
 
-    res.send(comments)
+    res.send(comments);
   } catch (error) {
-    res.sendStatus(500)
+    res.sendStatus(500);
   }
 }
 
 async function customizeHandler(req, res) {
   try {
-    const { id } = req.user
-    let { contentId } = req.body
+    const { id } = req.user;
+    let { contentId } = req.body;
 
-    contentId = parseInt(contentId)
+    contentId = parseInt(contentId);
 
     const customize = await prisma.customize.create({
       data: {
         userId: id,
         contentId,
       },
-    })
+    });
 
-    res.send(customize)
+    res.send(customize);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 
 async function searchHandler(req, res) {
   try {
-    const { q } = req.body
+    const { q } = req.body;
     const content = await prisma.post.findMany({
       where: {
         content: {
@@ -940,7 +939,7 @@ async function searchHandler(req, res) {
           },
         },
       },
-    })
+    });
 
     const location = await prisma.post.findMany({
       where: {
@@ -962,7 +961,7 @@ async function searchHandler(req, res) {
           },
         },
       },
-    })
+    });
 
     const title = await prisma.post.findMany({
       where: {
@@ -982,7 +981,7 @@ async function searchHandler(req, res) {
           },
         },
       },
-    })
+    });
 
     const description = await prisma.post.findMany({
       where: {
@@ -1002,23 +1001,23 @@ async function searchHandler(req, res) {
           },
         },
       },
-    })
+    });
 
-    let all = [...title, ...description, ...content, ...location]
-
-    all = all.map((item, pos) => {
-      return JSON.stringify(item)
-    })
-
-    all = all.filter((item, pos) => all.indexOf(item) == pos)
+    let all = [...title, ...description, ...content, ...location];
 
     all = all.map((item, pos) => {
-      return JSON.parse(item)
-    })
+      return JSON.stringify(item);
+    });
 
-    res.send(all)
+    all = all.filter((item, pos) => all.indexOf(item) == pos);
+
+    all = all.map((item, pos) => {
+      return JSON.parse(item);
+    });
+
+    res.send(all);
   } catch (error) {
-    res.sendStatus(500)
+    res.sendStatus(500);
   }
 }
 
@@ -1026,125 +1025,125 @@ async function analyticsHandler(req, res) {
   let sport = await prisma.post.count({
     where: {
       content: {
-        name: 'Sport',
+        name: "Sport",
       },
     },
-  })
+  });
   let bussiness = await prisma.post.count({
     where: {
       content: {
-        name: 'Bussiness',
+        name: "Bussiness",
       },
     },
-  })
+  });
   let culture = await prisma.post.count({
     where: {
       content: {
-        name: 'Culture',
+        name: "Culture",
       },
     },
-  })
+  });
   let health = await prisma.post.count({
     where: {
       content: {
-        name: 'Health',
+        name: "Health",
       },
     },
-  })
+  });
   let education = await prisma.post.count({
     where: {
       content: {
-        name: 'Education',
+        name: "Education",
       },
     },
-  })
+  });
   let sciTech = await prisma.post.count({
     where: {
       content: {
-        name: 'Sci-Tech',
+        name: "Sci-Tech",
       },
     },
-  })
+  });
   let politics = await prisma.post.count({
     where: {
       content: {
-        name: 'Politics',
+        name: "Politics",
       },
     },
-  })
+  });
 
-  res.send([sport, health, sciTech, education, bussiness, culture, politics])
+  res.send([sport, health, sciTech, education, bussiness, culture, politics]);
 }
 
-const fs = require('fs')
-const path = require('path')
-const { log } = require('console')
+const fs = require("fs");
+const path = require("path");
+const { log } = require("console");
 
 async function addVistorHandler(req, res) {
-  let count = parseInt(fs.readFileSync('public/visitor.txt', 'utf-8'))
-  count = count + 1 + ''
-  fs.writeFileSync('public/visitor.txt', count)
-  res.send('successfull')
+  let count = parseInt(fs.readFileSync("public/visitor.txt", "utf-8"));
+  count = count + 1 + "";
+  fs.writeFileSync("public/visitor.txt", count);
+  res.send("successfull");
 }
 
 async function visitorsHandler(req, res) {
-  const count = parseInt(fs.readFileSync('public/visitor.txt', 'utf-8'))
-  res.json(count)
+  const count = parseInt(fs.readFileSync("public/visitor.txt", "utf-8"));
+  res.json(count);
 }
 async function deletePostHandler(req, res) {
   try {
-    let { id } = req.body
-    id = parseInt(id)
+    let { id } = req.body;
+    id = parseInt(id);
     const postDelete = await prisma.post.delete({
       where: {
         id,
       },
-    })
-    res.send(postDelete)
+    });
+    res.send(postDelete);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 
 async function deletePostHandler(req, res) {
   try {
-    let { id } = req.body
-    id = parseInt(id)
+    let { id } = req.body;
+    id = parseInt(id);
     const postDelete = await prisma.post.delete({
       where: {
         id,
       },
-    })
-    res.send(postDelete)
+    });
+    res.send(postDelete);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 
 async function handleEditPost(req, res) {
-  const { email, role } = req.user
-  if (!email) return res.status(401).send('Permission denied')
+  const { email, role } = req.user;
+  if (!email) return res.status(401).send("Permission denied");
 
-  if (role != 'EDITOR') return res.status(401).send('Permission denied')
+  if (role != "EDITOR") return res.status(401).send("Permission denied");
   try {
     const userId = await prisma.user.findUnique({
       where: {
         email,
       },
-    })
-    console.log('Hello')
+    });
+    console.log("Hello");
     let { id, description, title, contentId, languageId, locationId, sources } =
-      req.body
+      req.body;
 
-    postsId = parseInt(id)
-    contentId = parseInt(contentId)
-    languageId = parseInt(languageId)
-    locationId = parseInt(locationId)
-    const files = req.files
-    console.log(files)
-    console.log('hello')
+    postsId = parseInt(id);
+    contentId = parseInt(contentId);
+    languageId = parseInt(languageId);
+    locationId = parseInt(locationId);
+    const files = req.files;
+    console.log(files);
+    console.log("hello");
     if (!files) {
       const updatedPost = await prisma.post.update({
         where: {
@@ -1158,10 +1157,10 @@ async function handleEditPost(req, res) {
           locationId,
           sources,
         },
-      })
-      return res.send(updatedPost)
+      });
+      return res.send(updatedPost);
     }
-    const imageUrl = upload(files)
+    const imageUrl = upload(files);
     const updatedPost = await prisma.post.update({
       where: {
         id: postsId,
@@ -1175,26 +1174,11 @@ async function handleEditPost(req, res) {
         locationId,
         sources,
       },
-    })
-    res.send(updatedPost)
+    });
+    res.send(updatedPost);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
-  }
-}
-async function deleteCommentHandler(req, res) {
-  try {
-    let { id } = req.body
-    id = parseInt(id)
-    const commentDelete = await prisma.comment.delete({
-      where: {
-        id,
-      },
-    })
-    res.send(commentDelete)
-  } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
 }
 module.exports = {
@@ -1231,5 +1215,4 @@ module.exports = {
   visitorsHandler,
   deletePostHandler,
   handleEditPost,
-  deleteCommentHandler,
-}
+};
